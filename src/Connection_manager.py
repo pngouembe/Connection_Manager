@@ -4,6 +4,7 @@ import os
 import socket
 import sys
 
+
 HOST = 'localhost'
 PORT = 65432
 
@@ -29,6 +30,18 @@ def launchClient():
 
 def main(argv):
     print("launching connection manager")
+    try:
+        opts, args = getopt.getopt(argv, "a:p:", "addr=port=")
+      
+    except:
+        print("Error")
+  
+    for opt, arg in opts:
+        if opt in ['-a', 'addr']:
+            HOST = arg
+        elif opt in ['-p', 'port']:
+            PORT = arg
+
     if "--server" in argv :
         launchServer()
     else:
