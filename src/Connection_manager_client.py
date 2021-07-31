@@ -3,18 +3,23 @@
 import os
 import socket
 import sys
-import getopt
+import argparse
 
-def usage():
-    print("--------------Connection_manager--------------")
+def setup_argument_parser():
+    parser = argparse.ArgumentParser(prog='Client-side connection manager',\
+                                     usage='python3 Connection_manager_client.py -a <IP address> -p <Port> -c \'<Command>\'',\
+                                     description='Program designed to keep track of the availability of a remote machine')
 
-    print("""Brief: Program designed to keep track of
-availability of a remote machine""")
-    print("""python3 Connection_manager.py -a <IP address> -p <Port> -c <"Command">""")
-    print("""Parameters:
-        -a, --addr: remote machine's IP address
-        -p, --port: port used for the connection
-        -c, --cmd : command used for the connection""")
+    # metavar='' so that there is no all caps argument name in usage
+    parser.add_argument('-a', '--address', default='localhost', metavar='', help='the machine\'s IP address')
+    parser.add_argument('-p', '--port', type=int, default=65432, metavar='', help='port used for the connection')
+    parser.add_argument('-c', '--cmd', default='', metavar='', help='command used for the connection')
+    
+    return parser
+
+def get_arguments(parser):
+    args = parser.parse_args()
+    return args.address, args.port, args.cmd
 
 def launchClient(host, port, cmd):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -28,29 +33,10 @@ def launchClient(host, port, cmd):
         os.system(cmd)
 
 def main(argv):
+    parser = setup_argument_parser()
+    host, port, cmd = get_arguments(parser)
     
-    host = 'localhost'
-    port = 65432
-    cmd = ''
     print("launching connection manager")
-    try:
-        opts, args = getopt.getopt(argv, "a:p:c:h", ["addr=","port=","cmd=","server", "help"])
-      
-    except getopt.GetoptError as e:
-        print("Error : {}".format(e.msg))
-        usage()
-        sys.exit(2)
-  
-    for opt, arg in opts:
-        if opt in ['-a', 'addr']:
-            host = arg
-        elif opt in ['-p', 'port']:
-            port = arg
-        elif opt in ['-c', 'cmd']:
-            cmd = arg
-        elif opt in ['-h', 'help']:
-            usage()
-            sys.exit(0)
             
     launchClient(host, port, cmd)
     print ("client exit")
