@@ -2,6 +2,8 @@
 
 import os
 import socket
+import threading 
+import time
 import sys
 import argparse
 
@@ -20,17 +22,31 @@ def get_arguments(parser):
     args = parser.parse_args()
     return args.address, args.port
 
+def client_handler(client, addr):
+    while True:
+        data = client.recv(1024)
+        if not data:
+            break
+        time.sleep(10)
+        client.sendall(data)
+    client.close()
+
 def launchServer(host, port):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.bind((host, port))
-    s.listen(1)
-    conn, addr = s.accept()
-    print('Connected by', addr)
+    s.listen(2)
+    i = 0
     while True:
-        data = conn.recv(1024)
-        if not data:
+        try:
+            conn, addr = s.accept()
+        except KeyboardInterrupt:
             break
-        conn.sendall(data)
+        print('Connected by', addr)
+        t = threading.Thread(target=client_handler, args=(conn, addr))
+        t.start()
+
+    t.join()
+    s.close()
 
 def main(argv):
     parser = setup_argument_parser()
