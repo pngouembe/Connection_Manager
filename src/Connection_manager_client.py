@@ -4,6 +4,7 @@ import os
 import socket
 import sys
 import argparse
+import time
 
 def setup_argument_parser():
     parser = argparse.ArgumentParser(prog='Client-side connection manager',\
@@ -31,6 +32,18 @@ def launchClient(host, port, cmd):
     if cmd != '':
         print("Launching cmd : {}".format(cmd))
         os.system(cmd)
+    else:
+        while True:
+            try:
+                time.sleep(1)
+            except KeyboardInterrupt:
+                break
+
+    # Handling socket closure                
+    s.sendall(b"END_CONNECTION")
+    data = s.recv(1024)
+    print('Received', repr(data))
+    s.close()
 
 def main(argv):
     parser = setup_argument_parser()

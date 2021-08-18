@@ -27,7 +27,9 @@ def client_handler(client, addr):
         data = client.recv(1024)
         if not data:
             break
-        time.sleep(10)
+        elif data == b"END_CONNECTION":
+            client.sendall(b"Connection ended per client request")
+            break
         client.sendall(data)
     client.close()
 
