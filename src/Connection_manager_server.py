@@ -67,12 +67,11 @@ def server_log():
 
     # clearing screen, placing cursor on 0,0 
     # then placing it on line 1 after printing header
-    header = """
-\033[2J\033[HConnection list:\n\
-ID\tADDR\tPORT\033[2;0H
-"""
+    header = "\033[2J\033[HConnection list:"
+    row_format = "{:>15}" * 3
 
     print(header)
+    print(row_format.format("ID", "ADDR", "PORT"))
 
     while server_running == True:
 
@@ -84,8 +83,9 @@ ID\tADDR\tPORT\033[2;0H
         lock.release()
 
         if print_flag == True:
+            print("\033[3;0H\033[J")
             for item in local_connection_list:
-                print("\033[2K\033[J{}\t{}\t{}\033[2;0H".format(item[0], item[1][0], item[1][1]))
+                print(row_format.format(item[0], item[1][0], item[1][1]))
             print_flag = False
         time.sleep(1)
     
