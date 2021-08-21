@@ -33,7 +33,7 @@ def client_handler(client, addr):
     global connection_number
     global active_connection
 
-    client_data = (connection_number, addr)
+    client_data = [connection_number, *addr, "DUMMY NAME"]
 
     lock.acquire()
     connection_list.append(client_data)
@@ -56,7 +56,8 @@ def client_handler(client, addr):
     active_connection -= 1
     lock.release()
 
-
+def cls():
+    os.system('cls' if os.name=='nt' else 'clear')
 
 def server_log():
     global connection_list
@@ -65,13 +66,24 @@ def server_log():
     local_active_connection = 0
     print_flag = False 
 
-    # clearing screen, placing cursor on 0,0 
-    # then placing it on line 1 after printing header
-    header = "\033[2J\033[HConnection list:"
-    row_format = "{:>15}" * 3
+    cls()
 
-    print(header)
-    print(row_format.format("ID", "ADDR", "PORT"))
+    size = os.get_terminal_size()
+
+    header = ["Connection list:", "Server logs: "]
+    columns = ["ID", "ADDR", "PORT", "NAME"]
+    separations = []
+    for i in columns:
+        separations.append("")
+
+    header_format = "\033[1;38;5;118m{:^{w}}\033[0m" * len(header)
+    row_format = "|{:{fill}^6}|{:{fill}^12}|{:{fill}^10}|{:{fill}^20}|"
+
+    print(header_format.format("Connection list:", "Server logs: " ,w=size.columns//2))
+    print(row_format.format(*separations, fill="\u203e"))
+    print(row_format.format(*columns, fill=""))
+    print(row_format.format(*separations, fill="-"))
+    print(row_format.format(*separations, fill="_"))
 
     while server_running == True:
 
@@ -80,12 +92,15 @@ def server_log():
             local_connection_list = connection_list.copy()
             local_active_connection = active_connection
             print_flag = True
+            print(local_connection_list)
         lock.release()
 
         if print_flag == True:
-            print("\033[3;0H\033[J")
+            print("\033[5;0H\033[J", end="\r")
             for item in local_connection_list:
-                print(row_format.format(item[0], item[1][0], item[1][1]))
+                print(row_format.format( *item,fill=""))
+                print(row_format.format(*separations, fill="-"))
+            print(row_format.format(*separations, fill="_"))
             print_flag = False
         time.sleep(1)
     
