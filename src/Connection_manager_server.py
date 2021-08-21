@@ -33,7 +33,7 @@ def client_handler(client, addr):
     global connection_number
     global active_connection
 
-    client_data = (connection_number, client, addr)
+    client_data = (connection_number, addr)
 
     lock.acquire()
     connection_list.append(client_data)
@@ -56,18 +56,38 @@ def client_handler(client, addr):
     active_connection -= 1
     lock.release()
 
+
+
 def server_log():
     global connection_list
     global active_connection
+    local_connection_list = []
+    local_active_connection = 0
+    print_flag = False 
+
+    # clearing screen, placing cursor on 0,0 
+    # then placing it on line 1 after printing header
+    header = """
+\033[2J\033[HConnection list:\n\
+ID\tADDR\tPORT\033[2;0H
+"""
+
+    print(header)
 
     while server_running == True:
 
         lock.acquire()
-        print("Connection list:")
-        print(connection_list)
-        print("\n\nActive connections: {}\n\n".format(active_connection))
+        if local_active_connection != connection_list:
+            local_connection_list = connection_list.copy()
+            local_active_connection = active_connection
+            print_flag = True
         lock.release()
-        time.sleep(3)
+
+        if print_flag == True:
+            for item in local_connection_list:
+                print("\033[2K\033[J{}\t{}\t{}\033[2;0H".format(item[0], item[1][0], item[1][1]))
+            print_flag = False
+        time.sleep(1)
     
 
 def launchServer(host, port):
@@ -91,7 +111,7 @@ def launchServer(host, port):
             server_running = False
             lock.release()
             break
-        print('Connected by', addr)
+        #print('Connected by', addr)
         t = threading.Thread(target=client_handler, args=(conn, addr))
         t.start()
 
