@@ -7,6 +7,12 @@ import time
 import sys
 import argparse
 
+lock = threading.Lock()
+connection_list = []
+connection_number = 0
+active_connection = 0
+server_running = False
+
 def setup_argument_parser():
     parser = argparse.ArgumentParser(prog='Server-side connection manager',\
                                      usage='python3 Connection_manager_server.py -a <IP address> -p <Port>',\
@@ -23,6 +29,18 @@ def get_arguments(parser):
     return args.address, args.port
 
 def client_handler(client, addr):
+    global connection_list
+    global connection_number
+    global active_connection
+
+    client_data = (connection_number, client, addr)
+
+    lock.acquire()
+    connection_list.append(client_data)
+    connection_number += 1
+    active_connection += 1
+    lock.release()
+
     while True:
         data = client.recv(1024)
         if not data:
@@ -33,7 +51,34 @@ def client_handler(client, addr):
         client.sendall(data)
     client.close()
 
+    lock.acquire()
+    connection_list.remove(client_data)
+    active_connection -= 1
+    lock.release()
+
+def server_log():
+    global connection_list
+    global active_connection
+
+    while server_running == True:
+
+        lock.acquire()
+        print("Connection list:")
+        print(connection_list)
+        print("\n\nActive connections: {}\n\n".format(active_connection))
+        lock.release()
+        time.sleep(3)
+    
+
 def launchServer(host, port):
+    global server_running
+    lock.acquire()
+    server_running = True
+    lock.release()
+
+    log_thread = threading.Thread(target=server_log)
+    log_thread.start()
+
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.bind((host, port))
     s.listen(2)
@@ -42,6 +87,9 @@ def launchServer(host, port):
         try:
             conn, addr = s.accept()
         except KeyboardInterrupt:
+            lock.acquire()
+            server_running = False
+            lock.release()
             break
         print('Connected by', addr)
         t = threading.Thread(target=client_handler, args=(conn, addr))
