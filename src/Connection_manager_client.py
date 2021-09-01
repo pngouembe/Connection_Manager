@@ -10,6 +10,10 @@ import time
 import threading
 import signal
 
+log_mgr = LoggerMgr()
+log_mgr.launch_logger_mgr()
+Log = log_mgr.Loggers[0]
+
 def setup_argument_parser():
     parser = argparse.ArgumentParser(prog='Client-side connection manager',\
                                      usage='python3 Connection_manager_client.py -a <IP address> -p <Port> -c \'<Command>\'',\
@@ -61,10 +65,6 @@ def launchClient(host, port, cmd, Log, timeout):
 def main(argv):
     parser = setup_argument_parser()
     host, port, cmd, timeout = get_arguments(parser)
-    
-    log_mgr = LoggerMgr()
-    log_mgr.launch_logger_mgr()
-    Log = log_mgr.Loggers[0]
 
     Log.log(Log.info_level, "launching connection manager") 
 

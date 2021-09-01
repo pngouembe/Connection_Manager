@@ -9,6 +9,10 @@ sys.path.append('../modules')
 from display import Logger, LoggerMgr
 import argparse
 
+log_mgr = LoggerMgr()
+log_mgr.launch_logger_mgr()
+Log = log_mgr.Loggers[0]
+
 c_list_lock = threading.Lock()
 connection_list = []
 connection_number = 0
@@ -99,9 +103,6 @@ def launchServer(host, port, Log):
 def main(argv):
     parser = setup_argument_parser()
     host, port = get_arguments(parser)
-    log_mgr = LoggerMgr()
-    log_mgr.launch_logger_mgr()
-    Log = log_mgr.Loggers[0]
 
     Log.log(Log.info_level, "launching connection manager")    
     launchServer(host, port, Log)
