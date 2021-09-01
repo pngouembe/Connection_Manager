@@ -32,6 +32,7 @@ def get_arguments(parser):
     return args.address, args.port, args.cmd, args.timeout
 
 def stop_client(*args):
+    Log.log(Log.warn_level, "Timeout reached, stoping the client")
     raise KeyboardInterrupt
 
 def launchClient(host, port, cmd, Log, timeout):
