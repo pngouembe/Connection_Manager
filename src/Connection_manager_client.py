@@ -3,10 +3,16 @@
 import os
 import socket
 import sys
+sys.path.append('../modules')
+from display import Logger, LoggerMgr
 import argparse
 import time
 import threading
 import signal
+
+log_mgr = LoggerMgr()
+log_mgr.launch_logger_mgr()
+Log = log_mgr.Loggers[0]
 
 def setup_argument_parser():
     parser = argparse.ArgumentParser(prog='Client-side connection manager',\
@@ -26,22 +32,25 @@ def get_arguments(parser):
     return args.address, args.port, args.cmd, args.timeout
 
 def stop_client(*args):
+    Log.log(Log.warn_level, "Timeout reached, stoping the client")
     raise KeyboardInterrupt
 
-def launchClient(host, port, cmd, timeout):
+def launchClient(host, port, cmd, Log, timeout):
     if timeout != 0:
-        print("hello")
+        Log.log(Log.info_level, "Timeout in {} seconds, setting an alarm".format(timeout))
         signal.signal(signal.SIGALRM, stop_client)
         signal.alarm(timeout)
 
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.connect((host, port))
+    Log.log(Log.info_level, "Sending: {}".format(b'Hello, world'))
     s.sendall(b'Hello, world')
     data = s.recv(1024)
 
-    print('Received', repr(data))
+    if data:
+        Log.log(Log.info_level, "Received: {}".format(repr(data)))
     if cmd != '':
-        print("Launching cmd : {}".format(cmd))
+        Log.log(Log.info_level, "Launching cmd : {}".format(cmd))
         os.system(cmd)
     else:
         while True:
@@ -52,18 +61,18 @@ def launchClient(host, port, cmd, timeout):
 
     # Handling socket closure                
     s.sendall(b"END_CONNECTION")
-    data = s.recv(1024)
-    print('Received', repr(data))
     s.close()
 
 def main(argv):
     parser = setup_argument_parser()
     host, port, cmd, timeout = get_arguments(parser)
-    
-    print("launching connection manager")
 
-    launchClient(host, port, cmd, timeout)
-    print ("client exit")
+    Log.log(Log.info_level, "launching connection manager") 
+
+    launchClient(host, port, cmd, Log, timeout)
+    Log.log(Log.info_level, "client exit")
+    time.sleep(1)
+    log_mgr.stop_logger_mgr()
 
 if __name__ == "__main__":
     main(sys.argv[1:])
