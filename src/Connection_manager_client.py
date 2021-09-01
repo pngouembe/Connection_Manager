@@ -43,10 +43,12 @@ def launchClient(host, port, cmd, Log, timeout):
 
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.connect((host, port))
+    Log.log(Log.info_level, "Sending: {}".format(b'Hello, world'))
     s.sendall(b'Hello, world')
     data = s.recv(1024)
 
-    Log.log(Log.info_level, "Received: {}".format(repr(data)))
+    if data:
+        Log.log(Log.info_level, "Received: {}".format(repr(data)))
     if cmd != '':
         Log.log(Log.info_level, "Launching cmd : {}".format(cmd))
         os.system(cmd)
@@ -59,8 +61,6 @@ def launchClient(host, port, cmd, Log, timeout):
 
     # Handling socket closure                
     s.sendall(b"END_CONNECTION")
-    data = s.recv(1024)
-    Log.log(Log.info_level, "Received".format(repr(data)))
     s.close()
 
 def main(argv):
