@@ -107,6 +107,7 @@ def main(argv):
     Log.log(Log.info_level, "launching connection manager")    
     launchServer(host, port, Log)
     Log.log(Log.info_level, "server exit")
+    time.sleep(1)
     log_mgr.stop_logger_mgr()
 
 if __name__ == "__main__":

@@ -71,6 +71,7 @@ def main(argv):
 
     launchClient(host, port, cmd, Log, timeout)
     Log.log(Log.info_level, "client exit")
+    time.sleep(1)
     log_mgr.stop_logger_mgr()
 
 if __name__ == "__main__":
