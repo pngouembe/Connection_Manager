@@ -3,6 +3,8 @@
 import os
 import socket
 import sys
+sys.path.append('../modules')
+from display import Logger, LoggerMgr
 import argparse
 import time
 import threading
@@ -28,9 +30,9 @@ def get_arguments(parser):
 def stop_client(*args):
     raise KeyboardInterrupt
 
-def launchClient(host, port, cmd, timeout):
+def launchClient(host, port, cmd, Log, timeout):
     if timeout != 0:
-        print("hello")
+        Log.log(Log.info_level, "Timeout in {} seconds, setting an alarm".format(timeout))
         signal.signal(signal.SIGALRM, stop_client)
         signal.alarm(timeout)
 
@@ -39,9 +41,9 @@ def launchClient(host, port, cmd, timeout):
     s.sendall(b'Hello, world')
     data = s.recv(1024)
 
-    print('Received', repr(data))
+    Log.log(Log.info_level, "Received: {}".format(repr(data)))
     if cmd != '':
-        print("Launching cmd : {}".format(cmd))
+        Log.log(Log.info_level, "Launching cmd : {}".format(cmd))
         os.system(cmd)
     else:
         while True:
@@ -53,17 +55,22 @@ def launchClient(host, port, cmd, timeout):
     # Handling socket closure                
     s.sendall(b"END_CONNECTION")
     data = s.recv(1024)
-    print('Received', repr(data))
+    Log.log(Log.info_level, "Received".format(repr(data)))
     s.close()
 
 def main(argv):
     parser = setup_argument_parser()
     host, port, cmd, timeout = get_arguments(parser)
     
-    print("launching connection manager")
+    log_mgr = LoggerMgr()
+    log_mgr.launch_logger_mgr()
+    Log = log_mgr.Loggers[0]
 
-    launchClient(host, port, cmd, timeout)
-    print ("client exit")
+    Log.log(Log.info_level, "launching connection manager") 
+
+    launchClient(host, port, cmd, Log, timeout)
+    Log.log(Log.info_level, "client exit")
+    log_mgr.stop_logger_mgr()
 
 if __name__ == "__main__":
     main(sys.argv[1:])
