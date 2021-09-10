@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import json
 import os
 import socket
 import sys
@@ -9,6 +10,8 @@ import argparse
 import time
 import threading
 import signal
+import json 
+import getpass
 
 log_mgr = LoggerMgr()
 log_mgr.launch_logger_mgr()
@@ -20,6 +23,7 @@ def setup_argument_parser():
                                      description='Program designed to keep track of the availability of a remote machine')
 
     # metavar='' so that there is no all caps argument name in usage
+    parser.add_argument('-n', '--name', default=getpass.getuser(), metavar='', help="user's name that will be communicated to the server")
     parser.add_argument('-a', '--address', default='localhost', metavar='', help='the machine\'s IP address')
     parser.add_argument('-p', '--port', type=int, default=65432, metavar='', help='port used for the connection')
     parser.add_argument('-c', '--cmd', default='', metavar='', help='command used for the connection')
@@ -29,22 +33,30 @@ def setup_argument_parser():
 
 def get_arguments(parser):
     args = parser.parse_args()
-    return args.address, args.port, args.cmd, args.timeout
+    return args.name ,args.address, args.port, args.cmd, args.timeout
 
 def stop_client(*args):
     Log.log(Log.warn_level, "Timeout reached, stoping the client")
     raise KeyboardInterrupt
 
-def launchClient(host, port, cmd, Log, timeout):
+def launchClient(name, host, port, cmd, Log, timeout):
+    client_data = {"name":name}
+    private_client_data = {}
     if timeout != 0:
         Log.log(Log.info_level, "Timeout in {} seconds, setting an alarm".format(timeout))
         signal.signal(signal.SIGALRM, stop_client)
         signal.alarm(timeout)
+        private_client_data["timeout"] = timeout
 
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.connect((host, port))
-    Log.log(Log.info_level, "Sending: {}".format(b'Hello, world'))
-    s.sendall(b'Hello, world')
+    private_client_data["host"] = host
+    private_client_data["port"] = port
+    msg_header = "INTRODUCE|||"
+    payload = json.dumps(client_data)
+    msg = "{}{}".format(msg_header, payload).encode()
+    Log.log(Log.info_level, "Sending: {}".format(payload))
+    s.sendall(msg)
     data = s.recv(1024)
 
     if data:
@@ -65,11 +77,11 @@ def launchClient(host, port, cmd, Log, timeout):
 
 def main(argv):
     parser = setup_argument_parser()
-    host, port, cmd, timeout = get_arguments(parser)
+    name, host, port, cmd, timeout = get_arguments(parser)
 
     Log.log(Log.info_level, "launching connection manager") 
 
-    launchClient(host, port, cmd, Log, timeout)
+    launchClient(name, host, port, cmd, Log, timeout)
     Log.log(Log.info_level, "client exit")
     time.sleep(1)
     log_mgr.stop_logger_mgr()

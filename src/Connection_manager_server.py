@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import os
+import json
 import socket
 import threading 
 import time
@@ -8,6 +8,7 @@ import sys
 sys.path.append('../modules')
 from display import Logger, LoggerMgr
 import argparse
+from json import loads
 
 log_mgr = LoggerMgr()
 log_mgr.launch_logger_mgr()
@@ -34,13 +35,12 @@ def get_arguments(parser):
     args = parser.parse_args()
     return args.address, args.port
 
-def client_handler(client, addr, Log):
+def client_handler(client, addr, Log:Logger):
     global connection_list
     global connection_number
     global active_connection
 
     client_data = [connection_number, *addr, "DUMMY NAME"]
-    Log.log(Log.info_level, "new client accepted : {}".format(client_data))
 
     c_list_lock.acquire()
     connection_list.append(client_data)
@@ -52,12 +52,20 @@ def client_handler(client, addr, Log):
         data = client.recv(1024)
         if not data:
             break
-        elif data == b"END_CONNECTION":
-            client.sendall(b"Connection ended per client request")
-            break
-        Log.log(Log.info_level, "Client #{} sent : {}".format(client_data[0], data))
-        client.sendall(data)
-        Log.log(Log.info_level, "Echo sent back")
+        else:
+            try:
+                msg_header, payload = data.decode().split("|||")
+            except ValueError:
+                #TODO deal with bad message format
+                pass
+            if msg_header == "INTRODUCE":
+                tmp = json.loads(payload)
+            elif data == b"END_CONNECTION":
+                client.sendall(b"Connection ended per client request")
+                break
+        Log.log(Log.dbg_level, "new client accepted : {}".format(tmp["name"]))
+        client.sendall(b"ACK")
+        Log.log(Log.dbg_level, "ACK sent")
     client.close()
 
     c_list_lock.acquire()
