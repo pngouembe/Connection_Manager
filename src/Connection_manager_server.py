@@ -7,6 +7,7 @@ import time
 import sys
 sys.path.append('../modules')
 from display import Logger, LoggerMgr
+from user import User
 import argparse
 from json import loads
 
@@ -35,19 +36,12 @@ def get_arguments(parser):
     args = parser.parse_args()
     return args.address, args.port
 
-def client_handler(client, addr, Log:Logger):
-    global connection_list
-    global connection_number
-    global active_connection
-
-    client_data = [connection_number, *addr, "DUMMY NAME"]
-
-    c_list_lock.acquire()
-    connection_list.append(client_data)
-    connection_number += 1
-    active_connection += 1
-    c_list_lock.release()
-
+def client_handler(user:User):
+    
+    if "user_logger" in user.user_info.keys():
+        Log = user.user_info["user_logger"]
+    Log.log(Log.info_level, "Active connections : {}".format(user.get_user_count()))
+    client = user.user_info["client_obj"]
     while True:
         data = client.recv(1024)
         if not data:
@@ -59,20 +53,19 @@ def client_handler(client, addr, Log:Logger):
                 #TODO deal with bad message format
                 pass
             if msg_header == "INTRODUCE":
-                tmp = json.loads(payload)
+                user.update(json.loads(payload))
             elif data == b"END_CONNECTION":
                 client.sendall(b"Connection ended per client request")
                 break
-        Log.log(Log.dbg_level, "new client accepted : {}".format(tmp["name"]))
+        Log.log(Log.dbg_level, "new client accepted : {}".format(user.get_user_name()))
+        Log.log(Log.dbg_level, "client list : {}".format(user.get_user_names_list()))
         client.sendall(b"ACK")
         Log.log(Log.dbg_level, "ACK sent")
     client.close()
 
-    c_list_lock.acquire()
-    connection_list.remove(client_data)
-    active_connection -= 1
-    c_list_lock.release()
-    Log.log(Log.info_level, "Client #{} disconnected".format(client_data[0]))
+    Log.log(Log.info_level, "Client #{} disconnected".format(user.get_total_user_count()))
+    Log.log(Log.info_level, "Active connections : {}".format(user.get_user_count()))
+    user.__del__()
     
 
 def launchServer(host, port, Log):
@@ -101,8 +94,8 @@ def launchServer(host, port, Log):
             server_running = False
             c_list_lock.release()
             break
-        #print('Connected by', addr)
-        t = threading.Thread(target=client_handler, args=(conn, addr, Log))
+        user = User({"client_obj": conn,"ip_addr":addr, "user_logger":Log})
+        t = threading.Thread(target=client_handler, args=(user,))
         t.start()
 
     t.join()
