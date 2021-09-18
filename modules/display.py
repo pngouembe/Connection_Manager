@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import threading
 import os
 import time
@@ -119,3 +121,14 @@ class LoggerMgr():
         print("\033[?25h",end="")
         for item in self.Loggers:
             item.kill()
+
+if __name__ == "__main__":
+    from random import randint
+    log_mgr = LoggerMgr()
+    Log : Logger = log_mgr.Loggers[0]
+    log_mgr.launch_logger_mgr()
+    for i in range(250):
+        slp_time_ms = randint(0,50) / 1000
+        time.sleep(slp_time_ms)
+        Log.log(Log.info_level, "{} : Slept for {} milliseconds".format(i, slp_time_ms))
+    log_mgr.stop_logger_mgr()
