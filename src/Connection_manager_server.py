@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import json
 import socket
 import threading 
 import time
@@ -9,6 +8,7 @@ sys.path.append('../modules')
 from display import Logger, LoggerMgr
 from user import User
 from com_protocole import ComProtocole, ComHeaders
+from server_actions import *
 import argparse
 import json
 
@@ -43,25 +43,20 @@ def client_handler(user:User):
         Log = user.user_info["user_logger"]
     Log.log(Log.info_level, "Active connections : {}".format(user.get_user_count()))
     client = user.user_info["client_obj"]
-    while True:
+    while user.is_com_active():
         data = client.recv(1024)
         if not data:
             break
         else:
             try:
                 msg_header, payload = ComProtocole.decode_msg(data.decode())
-            except ValueError:
+            except:
                 #TODO deal with bad message format
                 pass
-            if msg_header == ComHeaders.INTRODUCE:
-                user.update(json.loads(payload))
-            elif msg_header == ComHeaders.END_CONNECTION:
-                client.sendall(b"Connection ended per client request")
-                break
-        Log.log(Log.dbg_level, "new client accepted : {}".format(user.get_user_name()))
-        Log.log(Log.dbg_level, "client list : {}".format(user.get_user_names_list()))
-        client.sendall(b"ACK")
-        Log.log(Log.dbg_level, "ACK sent")
+
+            # Calling the action linked to the header received.
+            action_list[msg_header.value](user, payload)
+
     client.close()
     user.__del__()
 
@@ -105,6 +100,8 @@ def launchServer(host, port, Log):
 def main(argv):
     parser = setup_argument_parser()
     host, port = get_arguments(parser)
+
+    init_action_list()
 
     Log.log(Log.info_level, "launching connection manager")    
     launchServer(host, port, Log)

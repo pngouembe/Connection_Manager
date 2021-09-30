@@ -6,7 +6,9 @@ import socket
 import sys
 sys.path.append('../modules')
 from display import Logger, LoggerMgr
+from user import User
 from com_protocole import ComProtocole, ComHeaders
+from client_actions import *
 import argparse
 import time
 import threading
@@ -41,6 +43,7 @@ def stop_client(*args):
     raise KeyboardInterrupt
 
 def launchClient(name, host, port, cmd, Log, timeout):
+    user = User({"name":name, "user_logger":Log})
     client_data = {"name":name}
     private_client_data = {}
     if timeout != 0:
@@ -57,27 +60,46 @@ def launchClient(name, host, port, cmd, Log, timeout):
     msg = ComProtocole.generate_msg(ComHeaders.INTRODUCE, payload)
     Log.log(Log.info_level, "Sending: {}".format(payload))
     s.sendall(msg.encode())
-    data = s.recv(1024)
 
-    if data:
-        Log.log(Log.info_level, "Received: {}".format(repr(data)))
-    if cmd != '':
-        Log.log(Log.info_level, "Launching cmd : {}".format(cmd))
-        os.system(cmd)
-    else:
-        while True:
+    while user.is_com_active():
+        try:
+            data = s.recv(1024)
+        except KeyboardInterrupt:
+            break
+        if not data:
+            break
+        else:
             try:
-                signal.pause()
-            except KeyboardInterrupt:
-                break
+                msg_header, payload = ComProtocole.decode_msg(data.decode())
+            except:
+                #TODO deal with bad message format
+                pass
+
+            # Calling the action linked to the header received.
+            action_list[msg_header.value](user, payload)
+
+    # if cmd != '':
+    #     Log.log(Log.info_level, "Launching cmd : {}".format(cmd))
+    #     os.system(cmd)
+    # else:
+    #     while True:
+    #         try:
+    #             signal.pause()
+    #         except KeyboardInterrupt:
+    #             break
 
     # Handling socket closure                
     s.sendall(ComProtocole.generate_msg(ComHeaders.END_CONNECTION).encode())
+    data = s.recv(1024)
+    msg_header, payload = ComProtocole.decode_msg(data.decode())
+    action_list[msg_header.value](user, payload)
     s.close()
 
 def main(argv):
     parser = setup_argument_parser()
     name, host, port, cmd, timeout = get_arguments(parser)
+
+    init_action_list()
 
     Log.log(Log.info_level, "launching connection manager") 
 

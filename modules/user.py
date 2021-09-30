@@ -8,7 +8,7 @@ class User:
     __active_count = 0
     
     lock = threading.Lock()
-    __default_user_dict = {"name":"unknown", "comment":""}
+    __default_user_dict = {"name":"unknown", "comment":"", "active_com":True}
 
     def __init__(self, user_info={}) -> None:
         self.user_info = User.__default_user_dict.copy()
@@ -26,9 +26,11 @@ class User:
 
     def get_user_name(self) -> str:
         return self.user_info["name"]
+
     @staticmethod
     def get_user_count() -> int:
         return User.__active_count
+    
     @staticmethod
     def get_total_user_count() -> int:
         return User.__total_count
@@ -47,6 +49,11 @@ class User:
     def update(self, dict) -> None:
         self.user_info.update(dict)
     
+    def is_com_active(self) -> bool:
+        return self.user_info["active_com"]
+    
+    def desactivate_com(self) -> None:
+        self.user_info["active_com"] = False
 
 if __name__ == "__main__":
     u1 = User()
