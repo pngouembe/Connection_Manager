@@ -8,8 +8,9 @@ import sys
 sys.path.append('../modules')
 from display import Logger, LoggerMgr
 from user import User
+from com_protocole import ComProtocole, ComHeaders
 import argparse
-from json import loads
+import json
 
 log_mgr = LoggerMgr()
 log_mgr.launch_logger_mgr()
@@ -48,13 +49,13 @@ def client_handler(user:User):
             break
         else:
             try:
-                msg_header, payload = data.decode().split("|||")
+                msg_header, payload = ComProtocole.decode_msg(data.decode())
             except ValueError:
                 #TODO deal with bad message format
                 pass
-            if msg_header == "INTRODUCE":
+            if msg_header == ComHeaders.INTRODUCE:
                 user.update(json.loads(payload))
-            elif data == b"END_CONNECTION":
+            elif msg_header == ComHeaders.END_CONNECTION:
                 client.sendall(b"Connection ended per client request")
                 break
         Log.log(Log.dbg_level, "new client accepted : {}".format(user.get_user_name()))
@@ -62,10 +63,10 @@ def client_handler(user:User):
         client.sendall(b"ACK")
         Log.log(Log.dbg_level, "ACK sent")
     client.close()
+    user.__del__()
 
     Log.log(Log.info_level, "Client #{} disconnected".format(user.get_total_user_count()))
     Log.log(Log.info_level, "Active connections : {}".format(user.get_user_count()))
-    user.__del__()
     
 
 def launchServer(host, port, Log):

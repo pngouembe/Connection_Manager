@@ -6,6 +6,7 @@ import socket
 import sys
 sys.path.append('../modules')
 from display import Logger, LoggerMgr
+from com_protocole import ComProtocole, ComHeaders
 import argparse
 import time
 import threading
@@ -52,11 +53,10 @@ def launchClient(name, host, port, cmd, Log, timeout):
     s.connect((host, port))
     private_client_data["host"] = host
     private_client_data["port"] = port
-    msg_header = "INTRODUCE|||"
     payload = json.dumps(client_data)
-    msg = "{}{}".format(msg_header, payload).encode()
+    msg = ComProtocole.generate_msg(ComHeaders.INTRODUCE, payload)
     Log.log(Log.info_level, "Sending: {}".format(payload))
-    s.sendall(msg)
+    s.sendall(msg.encode())
     data = s.recv(1024)
 
     if data:
@@ -72,7 +72,7 @@ def launchClient(name, host, port, cmd, Log, timeout):
                 break
 
     # Handling socket closure                
-    s.sendall(b"END_CONNECTION")
+    s.sendall(ComProtocole.generate_msg(ComHeaders.END_CONNECTION).encode())
     s.close()
 
 def main(argv):
