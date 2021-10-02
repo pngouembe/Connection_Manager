@@ -7,6 +7,8 @@ from typing import Any, Tuple
 class ComHeaders(Enum):
     END_CONNECTION=0
     INTRODUCE=1
+    WAIT=2
+    FREE_RESOURCE=3
     def __str__(self) -> str:
         return str(self.value)
 
