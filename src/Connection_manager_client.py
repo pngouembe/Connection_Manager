@@ -30,6 +30,7 @@ def setup_argument_parser():
     parser.add_argument('-p', '--port', type=int, default=65432, metavar='', help='port used for the connection')
     parser.add_argument('-c', '--cmd', default='', metavar='', help='command used for the connection')
     parser.add_argument('-t', '--timeout', type=int, default=0, metavar='', help='timespan before client automatically ends the connection (in sec)')
+    parser.add_argument('-C', '--comment', type=str, default='', metavar='', help='comment to show to other users')
     
     return parser
 

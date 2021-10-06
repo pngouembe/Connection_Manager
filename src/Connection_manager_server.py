@@ -40,7 +40,7 @@ def client_handler(user:User):
     
     Log = user.get_logger()
     Log.log(Log.info_level, "Active connections : {}".format(user.get_user_count()))
-    client = user.user_info["client_obj"]
+    client = user.get_user_info("socket_obj")
     while user.is_com_active():
         data = client.recv(1024)
         if not data:
@@ -88,7 +88,7 @@ def launchServer(host, port, Log):
             server_running = False
             c_list_lock.release()
             break
-        user = User({"client_obj": conn,"ip_addr":addr})
+        user = User({"socket_obj": conn,"ip_addr":addr})
         user.register_logger(Log)
         t = threading.Thread(target=client_handler, args=(user,))
         t.start()
