@@ -9,12 +9,12 @@ def pass_fct(*args):
     pass
 
 def end_client_connection(user:User, payload: str) -> None:
-    Log = user.user_info["user_logger"]
+    Log = user.get_logger()
     Log.log(Log.info_level, "Received : {}".format(payload))
     user.desactivate_com()
 
 def client_registration_ack(user:User, payload: str) -> None:
-    Log = user.user_info["user_logger"]
+    Log = user.get_logger()
     Log.log(Log.info_level, "Received : {}".format(payload))
 
 action_list = [pass_fct for _ in range(len(ComHeaders))]

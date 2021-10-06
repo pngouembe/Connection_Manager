@@ -10,7 +10,6 @@ from user import User
 from com_protocole import ComProtocole, ComHeaders
 from server_actions import *
 import argparse
-import json
 
 log_mgr = LoggerMgr()
 log_mgr.launch_logger_mgr()
@@ -39,8 +38,7 @@ def get_arguments(parser):
 
 def client_handler(user:User):
     
-    if "user_logger" in user.user_info.keys():
-        Log = user.user_info["user_logger"]
+    Log = user.get_logger()
     Log.log(Log.info_level, "Active connections : {}".format(user.get_user_count()))
     client = user.user_info["client_obj"]
     while user.is_com_active():
@@ -90,7 +88,8 @@ def launchServer(host, port, Log):
             server_running = False
             c_list_lock.release()
             break
-        user = User({"client_obj": conn,"ip_addr":addr, "user_logger":Log})
+        user = User({"client_obj": conn,"ip_addr":addr})
+        user.register_logger(Log)
         t = threading.Thread(target=client_handler, args=(user,))
         t.start()
 

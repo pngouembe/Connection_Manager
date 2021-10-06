@@ -24,7 +24,7 @@ def add_client_to_user_list(user:User, payload: str) -> None:
     msg = ComProtocole.generate_msg(ComHeaders.INTRODUCE, "Client registered in wait list")
     client.sendall(msg.encode())
 
-    Log = user.user_info["user_logger"]
+    Log = user.get_logger()
     Log.log(Log.dbg_level, "new client accepted : {}".format(user.get_user_name()))
     Log.log(Log.dbg_level, "client list : {}".format(user.get_user_names_list()))
 

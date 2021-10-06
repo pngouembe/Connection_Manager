@@ -1,24 +1,23 @@
 #!/usr/bin/env python3
 
-import json
-import os
 import socket
 import sys
+from typing import Tuple
 sys.path.append('../modules')
-from display import Logger, LoggerMgr
+from display import LoggerMgr
 from user import User
 from com_protocole import ComProtocole, ComHeaders
 from client_actions import *
 import argparse
 import time
-import threading
-import signal
-import json 
+import signal 
 import getpass
 
 log_mgr = LoggerMgr()
 log_mgr.launch_logger_mgr()
 Log = log_mgr.Loggers[0]
+
+private_info = ["address", "port", "cmd"]
 
 def setup_argument_parser():
     parser = argparse.ArgumentParser(prog='Client-side connection manager',\
@@ -34,29 +33,28 @@ def setup_argument_parser():
     
     return parser
 
-def get_arguments(parser):
+def get_arguments(parser) -> Tuple[dict, dict]:
     args = parser.parse_args()
-    return args.name ,args.address, args.port, args.cmd, args.timeout
+    dict = vars(args)
+    public_dict = {k:dict[k] for k in dict.keys() if k not in private_info}
+    private_dict = {k:dict[k] for k in dict.keys() if k in private_info}
+    return (public_dict, private_dict)
 
 def stop_client(*args):
     Log.log(Log.warn_level, "Timeout reached, stoping the client")
     raise KeyboardInterrupt
 
-def launchClient(name, host, port, cmd, Log, timeout):
-    user = User({"name":name, "user_logger":Log})
-    client_data = {"name":name}
-    private_client_data = {}
-    if timeout != 0:
-        Log.log(Log.info_level, "Timeout in {} seconds, setting an alarm".format(timeout))
+def launchClient(user: User) -> None:
+    if user.get_user_info("timeout") != 0:
+        Log.log(Log.info_level, "Timeout in {} seconds, setting an alarm".format(user.get_user_info("timeout")))
         signal.signal(signal.SIGALRM, stop_client)
-        signal.alarm(timeout)
-        private_client_data["timeout"] = timeout
+        signal.alarm(user.get_user_info("timeout"))
 
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.connect((host, port))
-    private_client_data["host"] = host
-    private_client_data["port"] = port
-    payload = json.dumps(client_data)
+    s.connect((user.get_user_info("address"), user.get_user_info("port")))
+    
+    #dumping user's public info to send them to the server
+    payload = user.json_dump()
     msg = ComProtocole.generate_msg(ComHeaders.INTRODUCE, payload)
     Log.log(Log.info_level, "Sending: {}".format(payload))
     s.sendall(msg.encode())
@@ -78,16 +76,6 @@ def launchClient(name, host, port, cmd, Log, timeout):
             # Calling the action linked to the header received.
             action_list[msg_header.value](user, payload)
 
-    # if cmd != '':
-    #     Log.log(Log.info_level, "Launching cmd : {}".format(cmd))
-    #     os.system(cmd)
-    # else:
-    #     while True:
-    #         try:
-    #             signal.pause()
-    #         except KeyboardInterrupt:
-    #             break
-
     # Handling socket closure                
     s.sendall(ComProtocole.generate_msg(ComHeaders.END_CONNECTION).encode())
     data = s.recv(1024)
@@ -97,13 +85,21 @@ def launchClient(name, host, port, cmd, Log, timeout):
 
 def main(argv):
     parser = setup_argument_parser()
-    name, host, port, cmd, timeout = get_arguments(parser)
+    public_dict, private_dict = get_arguments(parser)
+
+    # Adding client parameters into user object 
+    user = User(public_dict)
+
+    user.add_private_info(private_dict)
+
+    # Adding logger to user context
+    user.register_logger(Log)
 
     init_action_list()
 
     Log.log(Log.info_level, "launching connection manager") 
 
-    launchClient(name, host, port, cmd, Log, timeout)
+    launchClient(user)
     Log.log(Log.info_level, "client exit")
     time.sleep(1)
     log_mgr.stop_logger_mgr()
