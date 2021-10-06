@@ -4,6 +4,7 @@ import sys
 sys.path.append('../modules')
 from user import User
 from com_protocole import ComHeaders
+import os
 
 def pass_fct(*args):
     pass
@@ -24,6 +25,12 @@ def wait_for_resource(user: User, payload: str) -> None:
 def access_resource(user: User, payload: str) -> None:
     Log = user.get_logger()
     Log.log(Log.info_level, "Received : {}".format(payload))
+    cmd = user.get_user_info("cmd")
+    if cmd:
+        Log.log(Log.info_level, "Launching cmd : {}".format(cmd))
+        os.system(cmd)
+        user.desactivate_com()
+
 
 action_list = [pass_fct for _ in range(len(ComHeaders))]
 
