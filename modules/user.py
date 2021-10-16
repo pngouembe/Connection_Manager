@@ -9,21 +9,22 @@ class User:
     __user_list = []
     __total_count = 0
     __active_count = 0
-    
+
     lock = threading.Lock()
-    __default_user_dict = {"name":"unknown", "comment":""}
+    __default_user_dict = {"name":"unknown", "comment":"", "timeout":0, "start_time":0}
     __default_user_private_dict = {"active_com":True}
 
-    def __init__(self, user_info={}) -> None:
+    def __init__(self, user_info={}, add_to_list:bool=True) -> None:
         self.__user_info = User.__default_user_dict.copy()
         self.__private_user_info = User.__default_user_private_dict.copy()
         self.__user_info.update(user_info)
-        User.__total_count += 1
-        User.__active_count += 1
-        self.__private_user_info["id"]=User.__total_count
-        User.lock.acquire()
-        User.__user_list.append(self)
-        User.lock.release()
+        if add_to_list:
+            User.__total_count += 1
+            User.__active_count += 1
+            self.__private_user_info["id"]=User.__total_count
+            User.lock.acquire()
+            User.__user_list.append(self)
+            User.lock.release()
 
     def __del__(self) -> None:
         try:
@@ -43,18 +44,18 @@ class User:
 
     def get_user_name(self) -> str:
         return self.__user_info["name"]
-    
+
     def get_user_id(self) -> str:
         return self.__private_user_info["id"]
 
     @staticmethod
     def get_user_count() -> int:
         return User.__active_count
-    
+
     @staticmethod
     def get_total_user_count() -> int:
         return User.__total_count
-    
+
     @staticmethod
     def get_user_list() -> list:
         return User.__user_list
@@ -102,7 +103,7 @@ class User:
 
     def is_com_active(self) -> bool:
         return self.__private_user_info["active_com"]
-    
+
     def activate_com(self) -> None:
         self.__private_user_info["active_com"] = True
 

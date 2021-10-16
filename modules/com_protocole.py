@@ -9,6 +9,8 @@ class ComHeaders(Enum):
     INTRODUCE=1
     WAIT=2
     FREE_RESOURCE=3
+    TIMEOUT=4
+    INVALID=5
     def __str__(self) -> str:
         return str(self.value)
 
@@ -21,7 +23,10 @@ class ComProtocole:
 
     @classmethod
     def decode_msg(cls, msg: str) -> Tuple[ComHeaders, str]:
-        header, payload = msg.split(cls.__separator)
+        header = ComHeaders.INVALID.value
+        payload = ''
+        if msg != '':
+            header, payload = msg.split(cls.__separator)
         return (ComHeaders(int(header)), payload)
 
 if __name__ == "__main__":
@@ -33,4 +38,4 @@ if __name__ == "__main__":
     print(msg2)
     dec_msg2 = ComProtocole.decode_msg(msg2)
     print(dec_msg2, end="\n\n")
-    
+
