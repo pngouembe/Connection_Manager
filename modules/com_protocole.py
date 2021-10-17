@@ -26,7 +26,7 @@ class ComProtocole:
         header = ComHeaders.INVALID.value
         payload = ''
         if msg != '':
-            header, payload = msg.split(cls.__separator)
+            header, payload = msg.split(cls.__separator,maxsplit=1)
         return (ComHeaders(int(header)), payload)
 
 if __name__ == "__main__":

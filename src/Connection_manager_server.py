@@ -45,20 +45,7 @@ def client_handler(user:User):
     Log.log(Log.info_level, "Active connections : {}".format(user.get_user_count()))
     client:socket = user.get_user_info("socket_obj")
     while user.is_com_active():
-        try:
-            data = client.recv(1024, MSG_DONTWAIT)
-        except BlockingIOError:
-            if user == User.get_first_user_in_line():
-                if user.get_user_info("start_time") == 0:
-                    user.update({"start_time":time.time()})
-                time_delta = time.time() - user.get_user_info("start_time")
-                timeout = user.get_user_info("timeout")
-                if  time_delta > timeout and timeout != 0:
-                    msg_str = "{} reached, timeout ({}s), closing connection".format( user.get_user_name(),timeout)
-                    Log.log(Log.info_level, msg_str)
-                    server_actions.client_connection_timeout(user)
-                    break
-            continue
+        data = client.recv(1024)
         if not data:
             break
         else:
@@ -92,7 +79,8 @@ def launchServer(server: User):
             conn, addr = s.accept()
         except KeyboardInterrupt:
             break
-        user = User({"socket_obj": conn,"ip_addr":addr})
+        user = User()
+        user.add_private_info({"socket_obj": conn,"ip_addr":addr})
         user.register_logger(Log)
 
         t = threading.Thread(target=client_handler, args=(user,))

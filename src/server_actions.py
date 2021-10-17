@@ -8,6 +8,7 @@ from com_protocole import ComHeaders, ComProtocole
 import json
 from socket import socket
 import global_vars
+from display import Logger
 
 def pass_fct(*args):
     pass
@@ -45,13 +46,14 @@ def end_client_connection(user: User, payload: str) -> None:
 def add_client_to_user_list(user: User, payload: str) -> None:
     Log:Logger = user.get_logger()
 
-    user.update(json.loads(payload))
-
-    if user.get_user_info("timeout") != 0:
+    user.update_from_json(payload)
+    Log.log(Log.info_level, "Received : {}".format(payload))
+    if user.get_user_info("timeout") != 0 and global_vars.max_client_execution_time !=0:
         timeout = min(global_vars.max_client_execution_time, user.get_user_info("timeout"))
-    else:
+    elif user.get_user_info("timeout") == 0 and global_vars.max_client_execution_time !=0:
         timeout = global_vars.max_client_execution_time
-
+    else:
+        timeout = user.get_user_info("timeout")
     user.update({"timeout": timeout})
 
     Log.log(Log.info_level, "Timeout set to {}s for {}".format(
@@ -60,7 +62,7 @@ def add_client_to_user_list(user: User, payload: str) -> None:
         ))
 
     client: socket = user.get_user_info("socket_obj")
-    msg = ComProtocole.generate_msg(ComHeaders.INTRODUCE, "Client registered in wait list")
+    msg = ComProtocole.generate_msg(ComHeaders.INTRODUCE, user.json_dump())
     client.sendall(msg.encode())
 
     first_in_line: User = User.get_first_user_in_line()
