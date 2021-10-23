@@ -6,12 +6,13 @@ import re
 
 @unique
 class ComHeaders(Enum):
-    END_CONNECTION=0
-    INTRODUCE=1
-    WAIT=2
-    FREE_RESOURCE=3
-    TIMEOUT=4
-    INVALID=5
+    INVALID=0
+    END_CONNECTION=1
+    INTRODUCE=2
+    WAIT=3
+    FREE_RESOURCE=4
+    TIMEOUT=5
+    UPDATE=6
     def __str__(self) -> str:
         return str(self.value)
 

@@ -12,7 +12,7 @@ class User:
 
     lock = threading.Lock()
     __default_user_dict = {"name":"unknown", "comment":"", "timeout":0, "start_time":0}
-    __default_user_private_dict = {"active_com":True}
+    __default_user_private_dict = {"active_com":True, "duplicate":False}
 
     def __init__(self, user_info={}, add_to_list:bool=True) -> None:
         self.__user_info = User.__default_user_dict.copy()
@@ -26,13 +26,15 @@ class User:
             User.__user_list.append(self)
             User.lock.release()
 
-    def __del__(self) -> None:
-        try:
+    def __del__(self, duplicate=False) -> None:
+        if self in User.__user_list:
             User.__user_list.remove(self)
-            User.__active_count -= 1
-        except:
-            #TODO fix the ValueError self not in list error
-            pass
+        User.__active_count -= 1
+
+    def remove_from_list(self):
+        if self in User.__user_list:
+            User.__user_list.remove(self)
+
 
     def get_user_info(self, info_name: str) -> Any:
         ret = ''
@@ -70,10 +72,25 @@ class User:
         return User.__user_list[idx + 1]
 
     @staticmethod
+    def set_next_user_in_line(user):
+        idx = User.__user_list.index(user)
+        User.__user_list.insert(1, User.__user_list.pop(idx))
+
+    @staticmethod
+    def get_user_reconnexion_attempt(user):
+        idx = User.__user_list.index(user)
+        for u in User.__user_list[idx+1:]:
+            if u.get_user_name() == user.get_user_name():
+                return u
+
+    @staticmethod
     def get_user_names_list() -> str:
-        str = User.__user_list[0].get_user_name()
-        for user in User.__user_list[1:]:
-            str += ', ' + user.get_user_name()
+        str = ''
+        if len(User.__user_list) >= 1:
+            str = User.__user_list[0].get_user_name()
+            if len(User.__user_list) > 1:
+                for user in User.__user_list[1:]:
+                    str += ', ' + user.get_user_name()
         return str
 
     @staticmethod
@@ -101,14 +118,33 @@ class User:
     def json_dump(self) -> str:
         return dumps(self.__user_info)
 
+    def get_user_info_dict(self) -> dict:
+        return self.__user_info
+
+    def get_user_private_info_dict(self) -> dict:
+        return self.__private_user_info
+
     def is_com_active(self) -> bool:
         return self.__private_user_info["active_com"]
+
+    def is_duplicate(self) -> bool:
+        return self.__private_user_info["duplicate"]
+
+    def is_trying_to_reconnect(self) -> bool:
+        ret = False
+        if len(User.get_user_list()) > 1:
+            waiting_list = User.get_waiting_list()
+            ret = self.get_user_name() in waiting_list
+        return ret
 
     def activate_com(self) -> None:
         self.__private_user_info["active_com"] = True
 
     def desactivate_com(self) -> None:
         self.__private_user_info["active_com"] = False
+
+    def set_as_duplicate(self) -> None:
+        self.__private_user_info["duplicate"] = True
 
 if __name__ == "__main__":
     u1 = User()

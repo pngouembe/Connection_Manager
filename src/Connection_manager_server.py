@@ -46,7 +46,7 @@ def client_handler(user:User):
     client:socket = user.get_user_info("socket_obj")
     while user.is_com_active():
         try:
-        data = client.recv(1024)
+            data = client.recv(1024)
         except ConnectionResetError:
             Log.log(Log.err_level, "Connection to {} lost".format(user.get_user_name()))
             break
@@ -55,14 +55,18 @@ def client_handler(user:User):
         else:
             message_list = ComProtocole.decode_msg(data.decode())
             for msg_header, payload in message_list:
-            # Calling the action linked to the header received.
-            server_actions.action_list[msg_header.value](user, payload)
+                # Calling the action linked to the header received.
+                server_actions.action_list[msg_header.value](user, payload)
 
     client.close()
-    user.__del__()
-
-    Log.log(Log.info_level, "Client #{} disconnected".format(user.get_total_user_count()))
-    Log.log(Log.info_level, "Active connections : {}".format(user.get_user_count()))
+    if user.is_duplicate():
+        Log.log(Log.dbg_level, "Closing {} duplicate".format(user.get_user_name()))
+    else:
+        Log.log(Log.info_level, "{} disconnected".format(user.get_user_name()))
+        Log.log(Log.info_level, "Active connections : {}".format(user.get_user_count() - 1))
+    user.remove_from_list()
+    Log.log(Log.dbg_level, "Client list {}".format(user.get_user_names_list()))
+    del user
 
 
 def launchServer(server: User):
@@ -86,11 +90,14 @@ def launchServer(server: User):
         user = User()
         user.add_private_info({"socket_obj": conn,"ip_addr":addr})
         user.register_logger(Log)
-
+        Log.log(Log.info_level, "addr: {}".format(user.get_user_info("ip_addr")))
         t = threading.Thread(target=client_handler, args=(user,))
         t.start()
-
-    t.join()
+        del user
+    try:
+        t.join()
+    except:
+        pass
     s.close()
 
 def main(argv):

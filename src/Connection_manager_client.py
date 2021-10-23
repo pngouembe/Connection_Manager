@@ -7,7 +7,8 @@ sys.path.append('../modules')
 from display import Logger, LoggerMgr
 from user import User
 from com_protocole import ComProtocole, ComHeaders
-from client_actions import *
+import client_actions
+import global_vars
 import argparse
 import time
 import signal
@@ -60,21 +61,25 @@ def launchClient(user: User) -> None:
         try:
             data = s.recv(1024)
         except KeyboardInterrupt:
+            user.desactivate_com()
             break
         if not data:
             break
         else:
-            msg_header, payload = ComProtocole.decode_msg(data.decode())
-
-            # Calling the action linked to the header received.
-            action_list[msg_header.value](user, payload)
+            message_list = ComProtocole.decode_msg(data.decode())
+            for msg_header, payload in message_list:
+                # Calling the action linked to the header received.
+                client_actions.action_list[msg_header.value](user, payload)
 
     # Handling socket closure
     s.sendall(ComProtocole.generate_msg(ComHeaders.END_CONNECTION).encode())
     data = s.recv(1024)
-    msg_header, payload = ComProtocole.decode_msg(data.decode())
-    action_list[msg_header.value](user, payload)
+    message_list = ComProtocole.decode_msg(data.decode())
+    for msg_header, payload in message_list:
+        # Calling the action linked to the header received.
+        client_actions.action_list[msg_header.value](user, payload)
     s.close()
+    del user
 
 def main(argv):
     parser = setup_argument_parser()
