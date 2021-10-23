@@ -88,7 +88,8 @@ def main(argv):
     # Adding logger to user context
     user.register_logger(Log)
 
-    init_action_list()
+    client_actions.init_action_list()
+    global_vars.init()
 
     Log.log(Log.info_level, "launching connection manager")
 

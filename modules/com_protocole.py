@@ -2,6 +2,7 @@
 
 from enum import Enum, unique
 from typing import Any, Tuple
+import re
 
 @unique
 class ComHeaders(Enum):
@@ -16,18 +17,26 @@ class ComHeaders(Enum):
 
 class ComProtocole:
     __separator = "|||"
+    __prefix = "$$$"
+    __sufix = "~~~"
+    __pattern = r'(\$\$\$(?P<header>\d+)\|\|\|(?P<payload>[^\~]*)\~\~\~)'
 
     @classmethod
     def generate_msg(cls, header: ComHeaders, payload: Any = '') -> str :
-        return str(header) + cls.__separator + str(payload)
+        return cls.__prefix + str(header) + cls.__separator + str(payload) + cls.__sufix
 
     @classmethod
-    def decode_msg(cls, msg: str) -> Tuple[ComHeaders, str]:
+    def decode_msg(cls, msg: str) -> list:
+        message_list = []
         header = ComHeaders.INVALID.value
         payload = ''
         if msg != '':
-            header, payload = msg.split(cls.__separator,maxsplit=1)
-        return (ComHeaders(int(header)), payload)
+            for m in re.finditer(cls.__pattern, msg):
+                tmp = m.groupdict()
+                message_list.append((ComHeaders(int(tmp["header"])), tmp["payload"]))
+        else:
+            message_list.append((ComHeaders(int(header)), payload))
+        return message_list
 
 if __name__ == "__main__":
     msg = ComProtocole.generate_msg(ComHeaders.END_CONNECTION)

@@ -45,12 +45,16 @@ def client_handler(user:User):
     Log.log(Log.info_level, "Active connections : {}".format(user.get_user_count()))
     client:socket = user.get_user_info("socket_obj")
     while user.is_com_active():
+        try:
         data = client.recv(1024)
+        except ConnectionResetError:
+            Log.log(Log.err_level, "Connection to {} lost".format(user.get_user_name()))
+            break
         if not data:
             break
         else:
-            msg_header, payload = ComProtocole.decode_msg(data.decode())
-
+            message_list = ComProtocole.decode_msg(data.decode())
+            for msg_header, payload in message_list:
             # Calling the action linked to the header received.
             server_actions.action_list[msg_header.value](user, payload)
 
