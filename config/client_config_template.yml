@@ -1,0 +1,30 @@
+# This file is used to configure connection manager clients
+# Command line configuration will override the one present in this file
+
+---
+Entity_type: Client
+
+# The name that will be referenced in the connection logs
+name: unknown
+
+# IP address of the server
+address: localhost
+
+# Port for to use to connect to the server
+port: 65432
+
+# Command to execute in the shell when client connection is authorized
+cmd: echo "Welcome to the connection manager client"; sleep 5
+
+# Timeout in seconds to set for the client.
+# Passed this time, client is automatically disconnected
+# The server can also set a timeout that will prevail over the following one
+timeout: 2
+
+# Comment that will be sent to the other client when they try to access
+# a resource that you are using
+comment: I'm just trying the template cfg file
+
+
+
+...
