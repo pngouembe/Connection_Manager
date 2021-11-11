@@ -5,6 +5,8 @@ from socket import socket, MSG_DONTWAIT, AF_INET, SOCK_STREAM
 import threading
 import time
 import sys
+import os
+import yaml
 
 sys.path.append('../modules')
 
@@ -24,6 +26,10 @@ connection_list = []
 connection_number = 0
 active_connection = 0
 
+default_config_file_name = os.path.join(
+    os.path.realpath(os.path.dirname(__file__)),
+    "../config/server_config_template.yml")
+
 
 def setup_argument_parser():
     parser = argparse.ArgumentParser(prog='Server-side connection manager',
@@ -37,13 +43,28 @@ def setup_argument_parser():
                         metavar='', help='port used for the connection')
     parser.add_argument('-t', '--timeout', type=float, default=0,
                         metavar='', help='Maximum time allowed to a client')
+    parser.add_argument('--cfg_file',
+                        type=str,
+                        default=default_config_file_name,
+                        metavar='',
+                        help='path to the config file',
+                        required=False)
 
     return parser
 
 
-def get_arguments(parser):
+def get_config(parser):
     args = parser.parse_args()
-    return vars(args)
+    cfg_dict = {}
+    if os.path.isfile(args.cfg_file):
+        with open(args.cfg_file, "r") as f:
+            cfg_dict: dict = yaml.load(f)
+        for key, value in vars(args).items():
+            if value:
+                cfg_dict[key] = value
+    else:
+        cfg_dict = vars(args)
+    return cfg_dict
 
 
 def client_handler(user: User):
@@ -115,7 +136,7 @@ def launchServer(server: User):
 
 def main(argv):
     parser = setup_argument_parser()
-    server_data = get_arguments(parser)
+    server_data = get_config(parser)
 
     server = User(server_data, add_to_list=False)
     server.register_logger(Log)

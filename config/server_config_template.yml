@@ -2,23 +2,16 @@
 # Command line configuration will override the one present in this file
 
 ---
-Entity_type: Client
-
-# The name that will be referenced in the connection logs
-name: test client
+Entity_type: Server
 
 # IP address of the server
 address: localhost
 
-# Port to use to connect to the server
+# Port used for client connection
 port: 65432
 
-# Command to execute in the shell when client connection is authorized
-cmd: echo "Welcome to the connection manager client"; sleep 5
-
 # Timeout in seconds to set for the client.
-# Passed this time, client is automatically disconnected
-# The server can also set a timeout that will prevail over the following one
+# Passed that time the client connection will be ended
 # If 0 is given, no timeout will be applied
 timeout: 2
 
