@@ -148,6 +148,11 @@ def main(argv):
     Log.log(Log.info_level, "Max client timeout : {}s".format(
         server.get_user_info("timeout")))
     global_vars.max_client_execution_time = server.get_user_info("timeout")
+    global_vars.resource_free_delay = server.get_user_info(
+        "resource_free_delay")
+    global_vars.reconnexion_retries = server.get_user_info(
+        "reconnexion_retries")
+
     launchServer(server)
     Log.log(Log.info_level, "server exit")
     time.sleep(1)

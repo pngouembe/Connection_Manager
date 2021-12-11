@@ -19,6 +19,10 @@ timeout: 2
 # a resource that you are using
 comment: I'm just trying the template cfg file
 
+# The time in seconds to wait before re attributing a resource
+resource_free_delay: 10
 
+# The number of time the server will check for client reconnexion
+reconnexion_retries: 10
 
 ...
