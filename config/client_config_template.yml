@@ -20,7 +20,7 @@ cmd: echo "Welcome to the connection manager client"; sleep 5
 # Passed this time, client is automatically disconnected
 # The server can also set a timeout that will prevail over the following one
 # If 0 is given, no timeout will be applied
-timeout: 2
+timeout: 0
 
 # Comment that will be sent to the other client when they try to access
 # a resource that you are using

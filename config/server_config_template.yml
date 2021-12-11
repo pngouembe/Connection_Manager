@@ -13,7 +13,7 @@ port: 65432
 # Timeout in seconds to set for the client.
 # Passed that time the client connection will be ended
 # If 0 is given, no timeout will be applied
-timeout: 2
+timeout: 0
 
 # Comment that will be sent to the other client when they try to access
 # a resource that you are using
