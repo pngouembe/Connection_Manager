@@ -46,12 +46,15 @@ def setup_argument_parser():
                         help='timespan before client automatically ends the connection (in sec)')
     parser.add_argument('-C', '--comment', type=str, required=False,
                         metavar='', help='comment to show to other users')
+    parser.add_argument('-r', '--resource', type=int, required=False,
+                        metavar='', help='ID of the resource to use')
     parser.add_argument('--cfg_file',
                         type=str,
                         default=default_config_file_name,
                         metavar='',
                         help='path to the config file',
                         required=False)
+
 
     return parser
 
