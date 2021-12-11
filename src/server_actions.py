@@ -23,8 +23,8 @@ def send_resource_freed_msg_to_next_in_line(user: User, skip_rety:bool=False) ->
     Log:Logger = user.get_logger()
     retry_cnt=0
     if not skip_rety:
-        log_str = "Waiting {}s in case {} reconnects".format(global_vars.resource_free_delay,
-                                                                user.get_user_name())
+        log_str = "Waiting {}s in case {} reconnects".format(
+            global_vars.resource_free_delay, user.get_user_name())
         Log.log(Log.dbg_level, log_str)
 
     while retry_cnt < global_vars.reconnexion_retries and not skip_rety:
@@ -60,7 +60,7 @@ def send_resource_freed_msg_to_next_in_line(user: User, skip_rety:bool=False) ->
             send_resource_freed_msg(next_user)
             user.desactivate_com()
 
-def client_connection_timeout(user: User) -> None:
+def client_connection_timeout(user: User, payload: str) -> None:
     client:socket = user.get_user_info("socket_obj")
     msg = ComProtocole.generate_msg(ComHeaders.TIMEOUT,
                                     "Timeout of {}s reached, connection ended".format(
@@ -68,7 +68,7 @@ def client_connection_timeout(user: User) -> None:
                                     ))
     client.sendall(msg.encode())
 
-    send_resource_freed_msg_to_next_in_line(user)
+    send_resource_freed_msg_to_next_in_line(user, skip_rety=True)
 
 def end_client_connection(user: User, payload: str) -> None:
     client:socket = user.get_user_info("socket_obj")
@@ -124,6 +124,7 @@ action_list = [pass_fct for _ in range(len(ComHeaders))]
 def init_action_list() -> None:
     action_list[ComHeaders.END_CONNECTION.value] = end_client_connection
     action_list[ComHeaders.INTRODUCE.value] = add_client_to_user_list
+    action_list[ComHeaders.TIMEOUT.value] = client_connection_timeout
 
 if __name__ == "__main__":
     pass

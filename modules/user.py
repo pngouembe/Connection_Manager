@@ -12,7 +12,8 @@ class User:
 
     lock = threading.Lock()
     __default_user_dict = {"name":"unknown", "comment":"", "timeout":0, "start_time":0}
-    __default_user_private_dict = {"active_com":True, "duplicate":False}
+    __default_user_private_dict = {
+        "active_com": True, "duplicate": False, "timed_out": False}
 
     def __init__(self, user_info={}, add_to_list:bool=True) -> None:
         self.__user_info = User.__default_user_dict.copy()
@@ -137,6 +138,9 @@ class User:
             ret = self.get_user_name() in waiting_list
         return ret
 
+    def is_timed_out(self) -> bool:
+        return self.__private_user_info["timed_out"]
+
     def activate_com(self) -> None:
         self.__private_user_info["active_com"] = True
 
@@ -145,6 +149,9 @@ class User:
 
     def set_as_duplicate(self) -> None:
         self.__private_user_info["duplicate"] = True
+
+    def timed_out(self) -> None:
+        self.__private_user_info["timed_out"] = True
 
 if __name__ == "__main__":
     u1 = User()

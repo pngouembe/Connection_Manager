@@ -105,7 +105,12 @@ def launchClient(user: User) -> None:
                 client_actions.action_list[msg_header.value](user, payload)
 
     # Handling socket closure
-    s.sendall(ComProtocole.generate_msg(ComHeaders.END_CONNECTION).encode())
+    if user.is_timed_out():
+        header = ComHeaders.TIMEOUT
+    else:
+        header = ComHeaders.END_CONNECTION
+
+    s.sendall(ComProtocole.generate_msg(header).encode())
     data = s.recv(1024)
     message_list = ComProtocole.decode_msg(data.decode())
     for msg_header, payload in message_list:
