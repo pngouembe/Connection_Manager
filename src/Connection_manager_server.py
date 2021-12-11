@@ -161,6 +161,8 @@ def main(argv):
 
     server = User(server_data, add_to_list=False)
     server.register_logger(Log)
+    if "Resources" in server_data.keys():
+        server.init_resources(server_data["Resources"])
 
     server_actions.init_action_list()
     global_vars.init()

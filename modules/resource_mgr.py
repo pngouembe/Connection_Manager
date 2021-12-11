@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 class Resource:
     __resource_nb = 0
 
@@ -40,3 +42,6 @@ class ResourceMgr:
 
     def get_resource_by_id(self, id):
         return self.resource_list[id]
+
+    def add_user(self, user, resource_id) -> None:
+        self.resource_list[resource_id].add_user_to_waiting_list(user)

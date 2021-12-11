@@ -4,9 +4,11 @@ import threading
 from json import loads, dumps
 from typing import Any
 from display import Logger
+from resource_mgr import Resource, ResourceMgr
 
 class User:
     __user_list = []
+    __resource_list = ResourceMgr()
     __total_count = 0
     __active_count = 0
 
@@ -153,6 +155,29 @@ class User:
     def timed_out(self) -> None:
         self.__private_user_info["timed_out"] = True
 
+    def get_resource(self) -> Resource:
+        id = self.__user_info["resource"]
+        return User.__resource_list.get_resource_by_id(id)
+
+    def is_next_in_line(self) -> bool:
+        resource = self.get_resource()
+        if resource.waiting_list != []:
+            return resource.get_first_user_in_line() == self
+        else:
+            self.add_to_resource_waiting_list()
+            return True
+
+    def init_resources(self, resources):
+        for r in resources:
+            User.__resource_list.add_resource(Resource(r["name"], r["info"]))
+
+    def add_to_resource_waiting_list(self):
+        resource = self.get_resource()
+        resource.add_user_to_waiting_list(self)
+
+    def remove_from_resource_waiting_list(self):
+        resource = self.get_resource()
+        resource.free_resource(self)
 if __name__ == "__main__":
     u1 = User()
     print("User count : {}".format(User.get_user_count()))
