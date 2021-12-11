@@ -134,11 +134,13 @@ class User:
         return self.__private_user_info["duplicate"]
 
     def is_trying_to_reconnect(self) -> bool:
-        ret = False
-        if len(User.get_user_list()) > 1:
-            waiting_list = User.get_waiting_list()
-            ret = self.get_user_name() in waiting_list
-        return ret
+        # TODO Found a better way to detect reconnections
+        # ret = False
+        # if len(User.get_user_list()) > 2:
+        #     waiting_list = User.get_waiting_list()
+        #     ret = self.get_user_name() in waiting_list
+        # return ret
+        return User.get_user_names_list().count(self.get_user_name()) > 1
 
     def is_timed_out(self) -> bool:
         return self.__private_user_info["timed_out"]
@@ -178,6 +180,8 @@ class User:
     def remove_from_resource_waiting_list(self):
         resource = self.get_resource()
         resource.free_resource(self)
+
+
 if __name__ == "__main__":
     u1 = User()
     print("User count : {}".format(User.get_user_count()))

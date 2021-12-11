@@ -118,7 +118,8 @@ def client_handler(user: User):
         Log.log(Log.info_level, "Active connections : {}".format(
             user.get_user_count() - 1))
     user.remove_from_list()
-    Log.log(Log.dbg_level, "Client list {}".format(user.get_user_names_list()))
+    Log.log(Log.dbg_level, "Client list : {}".format(
+        user.get_user_names_list()))
     del user
 
 
