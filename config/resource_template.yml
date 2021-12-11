@@ -1,0 +1,29 @@
+---
+Resources:
+  - name: Test_bench1
+    target_model: model1
+    interfaces:
+      - ethernet:
+        - lo: 127.0.0.1/8
+        - eth0: 192.168.0.1/24
+      - usb:
+        serial_port: COM1
+
+  - name: Test_bench2
+    target_model: model1
+    interfaces:
+      - ethernet:
+        - lo: 127.0.0.1/8
+        - eth0: 192.168.0.2/24
+      - usb:
+        serial_port: COM2
+
+  - name: Test_bench3
+    target_model: model1
+    interfaces:
+      - ethernet:
+        - lo: 127.0.0.1/8
+        - eth0: 192.168.0.3/24
+      - usb:
+        serial_port: COM3
+...

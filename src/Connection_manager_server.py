@@ -29,6 +29,9 @@ active_connection = 0
 default_config_file_name = os.path.join(
     os.path.realpath(os.path.dirname(__file__)),
     "../config/server_config_template.yml")
+default_resource_file_name = os.path.join(
+    os.path.realpath(os.path.dirname(__file__)),
+    "../config/resource_template.yml")
 
 
 def setup_argument_parser():
@@ -49,6 +52,12 @@ def setup_argument_parser():
                         metavar='',
                         help='path to the config file',
                         required=False)
+    parser.add_argument('--rsrc_file',
+                        type=str,
+                        default=default_resource_file_name,
+                        metavar='',
+                        help='path to the resource file',
+                        required=False)
 
     return parser
 
@@ -64,6 +73,18 @@ def get_config(parser):
                 cfg_dict[key] = value
     else:
         cfg_dict = vars(args)
+
+    if os.path.isfile(args.rsrc_file):
+        with open(args.rsrc_file, "r") as f:
+            rsrc_dict: dict = yaml.load(f)
+        for key, value in vars(args).items():
+            if value:
+                rsrc_dict[key] = value
+    else:
+        rsrc_dict = vars(args)
+
+    cfg_dict.update(rsrc_dict)
+
     return cfg_dict
 
 
