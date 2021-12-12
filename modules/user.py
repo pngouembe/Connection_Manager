@@ -175,7 +175,7 @@ class User:
 
     def add_to_resource_waiting_list(self):
         resource = self.get_resource()
-        resource.add_user_to_waiting_list(self)
+        resource.get_resource(self)
 
     def remove_from_resource_waiting_list(self):
         resource = self.get_resource()

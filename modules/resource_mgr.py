@@ -11,7 +11,7 @@ class Resource:
         self.waiting_list = []
         self.info = info
 
-    def add_user_to_waiting_list(self, user) -> None:
+    def __add_user_to_waiting_list(self, user) -> None:
         self.waiting_list.append(user)
 
     def get_first_user_in_line(self):
@@ -21,15 +21,15 @@ class Resource:
         idx = self.waiting_list.index(user)
         return self.waiting_list[idx + 1]
 
-    def remove_user_from_line(self, user):
+    def __remove_user_from_line(self, user):
         self.waiting_list.remove(user)
 
     def get_resource(self, user) -> None:
         self.is_free = False
-        self.add_user_to_waiting_list(user)
+        self.__add_user_to_waiting_list(user)
 
     def free_resource(self, user) -> None:
-        self.remove_user_from_line(user)
+        self.__remove_user_from_line(user)
         self.is_free = True
 
 
@@ -44,4 +44,4 @@ class ResourceMgr:
         return self.resource_list[id]
 
     def add_user(self, user, resource_id) -> None:
-        self.resource_list[resource_id].add_user_to_waiting_list(user)
+        self.resource_list[resource_id].__add_user_to_waiting_list(user)
