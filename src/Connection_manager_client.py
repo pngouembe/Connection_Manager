@@ -64,7 +64,7 @@ def get_config(parser) -> Tuple[dict, dict]:
     cfg_dict = {}
     if os.path.isfile(args.cfg_file):
         with open(args.cfg_file, "r") as f:
-            cfg_dict: dict = yaml.load(f)
+            cfg_dict: dict = yaml.safe_load(f)
         for key, value in vars(args).items():
             if value:
                 cfg_dict[key] = value

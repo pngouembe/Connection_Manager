@@ -67,7 +67,7 @@ def get_config(parser):
     cfg_dict = {}
     if os.path.isfile(args.cfg_file):
         with open(args.cfg_file, "r") as f:
-            cfg_dict: dict = yaml.load(f)
+            cfg_dict: dict = yaml.safe_load(f)
         for key, value in vars(args).items():
             if value:
                 cfg_dict[key] = value
@@ -76,7 +76,7 @@ def get_config(parser):
 
     if os.path.isfile(args.rsrc_file):
         with open(args.rsrc_file, "r") as f:
-            rsrc_dict: dict = yaml.load(f)
+            rsrc_dict: dict = yaml.safe_load(f)
         for key, value in vars(args).items():
             if value:
                 rsrc_dict[key] = value
