@@ -34,20 +34,39 @@ def setup_argument_parser():
                                      description='Program designed to keep track of the availability of a remote machine')
 
     # metavar='' so that there is no all caps argument name in usage
-    parser.add_argument('-n', '--name', metavar='',
-                        help="user's name that will be communicated to the server", required=False)
-    parser.add_argument('-a', '--address', default='localhost',
-                        metavar='', help='the machine\'s IP address')
-    parser.add_argument('-p', '--port', type=int, required=False,
-                        metavar='', help='port used for the connection')
-    parser.add_argument('-c', '--cmd', required=False, metavar='',
-                        help='command used for the connection')
-    parser.add_argument('-t', '--timeout', type=int, required=False, metavar='',
-                        help='timespan before client automatically ends the connection (in sec)')
-    parser.add_argument('-C', '--comment', type=str, required=False,
-                        metavar='', help='comment to show to other users')
-    parser.add_argument('-r', '--resource', type=int, required=False,
-                        metavar='', help='ID of the resource to use')
+    parser.add_argument('-n', '--name',
+                        metavar='',
+                        help="user's name that will be communicated to the server",
+                        required=False)
+    parser.add_argument('-a', '--address',
+                        type=str,
+                        metavar='',
+                        help='the machine\'s IP address')
+    parser.add_argument('-p', '--port',
+                        type=int,
+                        metavar='',
+                        help='port used for the connection',
+                        required=False)
+    parser.add_argument('-c', '--cmd',
+                        type=str,
+                        metavar='',
+                        help='command used for the connection',
+                        required=False,)
+    parser.add_argument('-t', '--timeout',
+                        type=int,
+                        metavar='',
+                        help='timespan before client automatically ends the connection (in sec)',
+                        required=False,)
+    parser.add_argument('-C', '--comment',
+                        type=str,
+                        metavar='',
+                        help='comment to show to other users',
+                        required=False)
+    parser.add_argument('-r', '--resource',
+                        type=int,
+                        metavar='',
+                        help='ID of the resource to use',
+                        required=False)
     parser.add_argument('--cfg_file',
                         type=str,
                         default=default_config_file_name,

@@ -40,12 +40,22 @@ def setup_argument_parser():
                                      description='Program designed to keep track of the availability of a remote machine')
 
     # metavar='' so that there is no all caps argument name in usage
-    parser.add_argument('-a', '--address', default='localhost',
-                        metavar='', help='the machine\'s IP address')
-    parser.add_argument('-p', '--port', type=int, default=65432,
-                        metavar='', help='port used for the connection')
-    parser.add_argument('-t', '--timeout', type=float, default=0,
-                        metavar='', help='Maximum time allowed to a client')
+    parser.add_argument('-a', '--address',
+                        type=str,
+                        metavar='',
+                        help='the machine\'s IP address',
+                        required=False)
+    parser.add_argument('-p', '--port',
+                        type=int,
+                        metavar='',
+                        help='port used for the connection',
+                        required=False)
+    parser.add_argument('-t', '--timeout',
+                        type=float,
+                        metavar='',
+                        help='Maximum time allowed to a client',
+                        required=False
+                        )
     parser.add_argument('--cfg_file',
                         type=str,
                         default=default_config_file_name,
@@ -129,10 +139,11 @@ def launchServer(server: User):
     bound = False
     while not bound:
         try:
-            s.bind((server.get_user_info("host"), server.get_user_info("port")))
+            s.bind((server.get_user_info("address"),
+                   server.get_user_info("port")))
             bound = True
             Log.log(Log.info_level, "bind successful on {}:{}".format(
-                server.get_user_info("host"),
+                server.get_user_info("address"),
                 server.get_user_info("port")))
         except OSError:
             Log.log(Log.err_level, "Failed to bind, trying again in 5 seconds...")
