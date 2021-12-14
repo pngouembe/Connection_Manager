@@ -85,6 +85,9 @@ def stop_client(*args):
 def launchClient(user: User) -> None:
 
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    Log.log(Log.info_level, "Trying to connect on {}:{}".format(
+        user.get_user_info("address"),
+        user.get_user_info("port")))
     s.connect((user.get_user_info("address"), user.get_user_info("port")))
 
     # dumping user's public info to send them to the server

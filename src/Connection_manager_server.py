@@ -131,7 +131,9 @@ def launchServer(server: User):
         try:
             s.bind((server.get_user_info("host"), server.get_user_info("port")))
             bound = True
-            Log.log(Log.info_level, "bind successful")
+            Log.log(Log.info_level, "bind successful on {}:{}".format(
+                server.get_user_info("host"),
+                server.get_user_info("port")))
         except OSError:
             Log.log(Log.err_level, "Failed to bind, trying again in 5 seconds...")
             time.sleep(5)
