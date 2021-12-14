@@ -50,6 +50,9 @@ class User:
     def get_user_name(self) -> str:
         return self.__user_info["name"]
 
+    def get_user_comment(self) -> str:
+        return self.__user_info["comment"]
+
     def get_user_id(self) -> str:
         return self.__private_user_info["id"]
 
