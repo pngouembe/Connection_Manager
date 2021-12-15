@@ -3,6 +3,7 @@ from flask_login import login_required, current_user
 from .models import Note
 from . import db
 import json
+import yaml
 
 import sys
 sys.path.append('../modules')
@@ -26,10 +27,13 @@ def dashboard():
             db.session.add(new_note)
             db.session.commit()
             flash('Note added!', category='success')
-    r = [Resource(name="foo"), Resource(name="bar"), Resource(), Resource()]
-    r[0].get_resource(
-        User(user_info={"name": "toto", "comment": "coucou moumou"}))
-    return render_template("dashboard.html", resource_list=r)
+    with open("../config/resource_template.yml", "r") as f:
+        rsrc_dict: dict = yaml.safe_load(f)
+    rsrc_list = []
+    for r in rsrc_dict["Resources"]:
+        print(r["info"])
+        rsrc_list.append(Resource(r["name"], r["info"]))
+    return render_template("dashboard.html", resource_list=rsrc_list)
 
 
 @views.route('/home')

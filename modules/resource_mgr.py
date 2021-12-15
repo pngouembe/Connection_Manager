@@ -3,13 +3,16 @@
 class Resource:
     __resource_nb = 0
 
-    def __init__(self, name="resource#", info=None) -> None:
+    def __init__(self, name="resource#", info: list = None) -> None:
         self.id = Resource.__resource_nb
         Resource.__resource_nb += 1
         self.name = name if name != "resource#" else name + str(self.id)
         self.is_free = True
         self.waiting_list = []
         self.info = info
+        self.is_usable = True
+        if {"is_usable" : False} in info:
+            self.is_usable = False
 
     def __add_user_to_waiting_list(self, user) -> None:
         self.waiting_list.append(user)

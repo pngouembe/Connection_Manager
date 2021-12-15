@@ -2,6 +2,7 @@
 Resources:
   - name: Test_bench1
     info:
+      - is_usable: True #is true by default
       - target_model: model1
       - interfaces:
         - ethernet:
@@ -22,6 +23,7 @@ Resources:
 
   - name: Test_bench3
     info:
+      - is_usable: False
       - target_model: model1
       - interfaces:
         - ethernet:

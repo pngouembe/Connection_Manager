@@ -16,10 +16,11 @@ import server_actions
 from com_protocole import ComProtocole, ComHeaders
 from user import User
 from display import Logger, LoggerMgr
+from website import create_app
 
-log_mgr = LoggerMgr()
-log_mgr.launch_logger_mgr()
-Log: Logger = log_mgr.Loggers[0]
+# log_mgr = LoggerMgr()
+# log_mgr.launch_logger_mgr()
+# Log: Logger = log_mgr.Loggers[0]
 
 c_list_lock = threading.Lock()
 connection_list = []
@@ -168,12 +169,24 @@ def launchServer(server: User):
         pass
     s.close()
 
+app = create_app()
+
+
+def launchWebServer(server: User):
+    t = threading.Thread(target=app.run, kwargs={
+                         "host": server.get_user_info("address"),
+                         "port": server.get_user_info("port"),
+                         "debug": True})
 
 def main(argv):
     parser = setup_argument_parser()
     server_data = get_config(parser)
 
     server = User(server_data, add_to_list=False)
+    # launchWebServer(server)
+    app.run(debug=True)
+    while True:
+        pass
     server.register_logger(Log)
     if "Resources" in server_data.keys():
         server.init_resources(server_data["Resources"])
@@ -189,6 +202,7 @@ def main(argv):
         "resource_free_delay")
     global_vars.reconnexion_retries = server.get_user_info(
         "reconnexion_retries")
+
 
     launchServer(server)
     Log.log(Log.info_level, "server exit")
