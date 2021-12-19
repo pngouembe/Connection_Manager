@@ -14,8 +14,9 @@ views = Blueprint('views', __name__)
 def dashboard():
     server: User = current_app.config.get('server_data')
     rsrc_list = server.get_resource_list()
-
-    return render_template("dashboard.html", resource_list=rsrc_list)
+    log_buffer = server.get_logger().log_buffer
+    Log = server.get_logger()
+    return render_template("dashboard.html", resource_list=rsrc_list, log_buffer=log_buffer)
 
 
 @views.route('/home')

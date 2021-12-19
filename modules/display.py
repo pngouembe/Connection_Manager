@@ -7,6 +7,24 @@ import time
 def cls():
     os.system('cls' if os.name=='nt' else 'clear')
 
+
+class WebLogger(threading.Thread):
+    def __init__(self) -> None:
+        self.log_buffer = []
+        self.lock = threading.Lock()
+        threading.Thread.__init__(self)
+
+    err_level = 0
+    warn_level = 1
+    info_level = 2
+    dbg_level = 3
+
+    def log(self, level, msg) -> None:
+        self.lock.acquire()
+        self.log_buffer.append([level, msg])
+        self.lock.release()
+
+
 class Logger(threading.Thread):
     #
     def __init__(self, title='', x=0, y=0, row=0, col=0) -> None:
@@ -17,7 +35,7 @@ class Logger(threading.Thread):
         y : int, default=0, y offset on screen
         row : int, default=0, number of rows printed on screen
         col : int, default=0, number of columns printed on screen
-        
+
         """
         self.title = title
         self.x_off = x
@@ -26,7 +44,7 @@ class Logger(threading.Thread):
         # remove top and bottom lines from number of
         # printable rows
         # lines used for the title are also removed
-        self.row_off = 2 if self.title == '' else 4 
+        self.row_off = 2 if self.title == '' else 4
         if row == 0:
             # not counting first and last line
             self._rows = self.size.lines - self.row_off - y
@@ -97,7 +115,7 @@ class Logger(threading.Thread):
 
 class LoggerMgr():
     Loggers=[]
-    # The init function should take a config file or a dictionary 
+    # The init function should take a config file or a dictionary
     # containing loggers informations
     def __init__(self,logger_list=None,logger_cfg_file=None) -> None:
         # Need to init all the Loggers objects wanted by user
@@ -115,7 +133,7 @@ class LoggerMgr():
         # Waiting for all loggers to finish
         # for item in self.Loggers:
         #     item.join()
-    
+
     def stop_logger_mgr(self) -> None:
         # Making cursos visible
         print("\033[?25h",end="")

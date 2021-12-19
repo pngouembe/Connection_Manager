@@ -6,7 +6,7 @@
                     <h6>Resources</h6>
                     <p class="text-sm">
                         <i class="fa fa-check text-info" aria-hidden="true"></i>
-                        <span class="font-weight-bold ms-1">30 done</span> this month
+                        <span class="font-weight-bold ms-1">36 done</span> this month
                     </p>
                 </div>
                 <div class="col col my-auto text-end">
@@ -29,17 +29,18 @@
                 <table class="table align-items-center mb-0">
                     <thead>
                         <tr>
-                            <th class="text-uppercase text-secondary text-xxs text-center font-weight-bolder opacity-7" style="width: 5%">Resource id
-                            </th>
                             <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Resource
                             </th>
                             <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Used by
                             </th>
-                            <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Info
+                            <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                Info
                             </th>
-                            <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Session start time
+                            <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                Session start time
                             </th>
-                            <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Session end time
+                            <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                Session end time
                             </th>
                         </tr>
                     </thead>
@@ -48,15 +49,11 @@
                         {% for resource in resources %}
                         <tr>
                             <td>
-                                <div class="align-middle text-center text-sm">
-                                    #{{ resource.id }}
-                                </div>
-                            </td>
-                            <td>
                                 <div class="d-flex flex-row px-2 py-1">
                                     <div>
                                         {% if not resource.is_usable %}
-                                        <img src="/static/assets/img/status/not_usable.png" class="avatar avatar-sm me-3" alt="xd">
+                                        <img src="/static/assets/img/status/not_usable.png"
+                                            class="avatar avatar-sm me-3" alt="xd">
                                         {% elif resource.is_free %}
                                         <img src="/static/assets/img/status/free.png" class="avatar avatar-sm me-3"
                                             alt="xd">
@@ -66,7 +63,7 @@
                                         {% endif %}
                                     </div>
                                     <div class="d-flex flex-column justify-content-center">
-                                        <h6 class="mb-0 text-sm">{{ resource.name }}</h6>
+                                        <h6 class="mb-0 text-sm">- #{{ resource.id }} - {{ resource.name }}</h6>
                                     </div>
                                 </div>
                             </td>
@@ -92,7 +89,8 @@
                                 {% if resource.is_free %}
 
                                 {% else %}
-                                <h6 class="mb-0 text-sm">{{ resource.get_first_user_in_line().get_user_info("start_time") }}
+                                <h6 class="mb-0 text-sm">{{
+                                    resource.get_first_user_in_line().get_user_info("start_time") }}
                                 </h6>
                                 {% endif %}
                             </td>
@@ -100,7 +98,8 @@
                                 {% if resource.is_free %}
 
                                 {% else %}
-                                <h6 class="mb-0 text-sm">{{ resource.get_first_user_in_line().get_user_info("start_time") +
+                                <h6 class="mb-0 text-sm">{{
+                                    resource.get_first_user_in_line().get_user_info("start_time") +
                                     resource.get_first_user_in_line().get_user_info("timeout") }}
                                 </h6>
                                 {% endif %}
@@ -110,7 +109,7 @@
                         {% endwith %}
                     </tbody>
                 </table>
-            </di>
+            </div>
         </div>
     </div>
 </div>

@@ -33,7 +33,8 @@ class Resource:
 
     def free_resource(self, user) -> None:
         self.__remove_user_from_line(user)
-        self.is_free = True
+        if not self.waiting_list:
+            self.is_free = True
 
 
 class ResourceMgr:
@@ -47,4 +48,4 @@ class ResourceMgr:
         return self.resource_list[id]
 
     def add_user(self, user, resource_id) -> None:
-        self.resource_list[resource_id].__add_user_to_waiting_list(user)
+        self.resource_list[resource_id].get_resource(user)

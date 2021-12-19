@@ -124,13 +124,12 @@ def add_client_to_user_list(user: User, payload: str) -> None:
     msg = ComProtocole.generate_msg(ComHeaders.INTRODUCE, user.json_dump())
     client.sendall(msg.encode())
 
-    first_in_line: User = User.get_first_user_in_line()
-
     if user.is_next_in_line():
         msg = ComProtocole.generate_msg(
             ComHeaders.FREE_RESOURCE, "Resource is free!")
         client.sendall(msg.encode())
     else:
+        first_in_line: User = User.get_first_user_in_line()
         user.add_to_resource_waiting_list()
         msg_str = "Resource is taken by {}, comment: {}".format(first_in_line.get_user_name(),
                                                                 first_in_line.get_user_info("comment"))

@@ -15,12 +15,13 @@ import global_vars
 import server_actions
 from com_protocole import ComProtocole, ComHeaders
 from user import User
-from display import Logger, LoggerMgr
+from display import Logger, LoggerMgr, WebLogger
 from website import create_app
 
-log_mgr = LoggerMgr()
+Log: WebLogger = WebLogger()
+log_mgr = LoggerMgr(logger_list=[Log])
 log_mgr.launch_logger_mgr()
-Log: Logger = log_mgr.Loggers[0]
+#Log: Logger = log_mgr.Loggers[0]
 
 c_list_lock = threading.Lock()
 connection_list = []
