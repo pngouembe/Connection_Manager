@@ -145,6 +145,8 @@ def launchServer(server: User):
     bound = False
     retries = 0
     max_retries = 0
+
+    # TODO Fix the multiple server launch when max retries > 0
     while not bound:
         try:
             s.bind((server.get_user_info("address"),
