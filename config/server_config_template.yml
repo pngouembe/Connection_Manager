@@ -5,10 +5,13 @@
 Entity_type: Server
 
 # IP address of the server
-address: localhost
+address: "0.0.0.0"
 
 # Port used for client connection
 port: 65432
+
+# Port used for the web server
+web_port: 5000
 
 # Timeout in seconds to set for the client.
 # Passed that time the client connection will be ended

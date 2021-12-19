@@ -18,9 +18,9 @@ from user import User
 from display import Logger, LoggerMgr
 from website import create_app
 
-# log_mgr = LoggerMgr()
-# log_mgr.launch_logger_mgr()
-# Log: Logger = log_mgr.Loggers[0]
+log_mgr = LoggerMgr()
+log_mgr.launch_logger_mgr()
+Log: Logger = log_mgr.Loggers[0]
 
 c_list_lock = threading.Lock()
 connection_list = []
@@ -50,6 +50,11 @@ def setup_argument_parser():
                         type=int,
                         metavar='',
                         help='port used for the connection',
+                        required=False)
+    parser.add_argument('--web_port',
+                        type=int,
+                        metavar='',
+                        help='port used for the web server',
                         required=False)
     parser.add_argument('-t', '--timeout',
                         type=float,
@@ -138,6 +143,8 @@ def launchServer(server: User):
 
     s = socket(AF_INET, SOCK_STREAM)
     bound = False
+    retries = 0
+    max_retries = 0
     while not bound:
         try:
             s.bind((server.get_user_info("address"),
@@ -147,8 +154,13 @@ def launchServer(server: User):
                 server.get_user_info("address"),
                 server.get_user_info("port")))
         except OSError:
-            Log.log(Log.err_level, "Failed to bind, trying again in 5 seconds...")
-            time.sleep(5)
+            if retries < max_retries :
+                Log.log(Log.err_level, "Failed to bind, trying again in 5 seconds...")
+                Log.log(Log.err_level, "{}:{}".format(
+                    server.get_user_info("address"), server.get_user_info("port")))
+                time.sleep(5)
+            else:
+                exit()
     s.listen(2)
     while True:
         try:
@@ -169,24 +181,11 @@ def launchServer(server: User):
         pass
     s.close()
 
-app = create_app()
-
-
-def launchWebServer(server: User):
-    t = threading.Thread(target=app.run, kwargs={
-                         "host": server.get_user_info("address"),
-                         "port": server.get_user_info("port"),
-                         "debug": True})
-
 def main(argv):
     parser = setup_argument_parser()
     server_data = get_config(parser)
 
     server = User(server_data, add_to_list=False)
-    # launchWebServer(server)
-    app.run(debug=True)
-    while True:
-        pass
     server.register_logger(Log)
     if "Resources" in server_data.keys():
         server.init_resources(server_data["Resources"])
@@ -197,14 +196,23 @@ def main(argv):
     Log.log(Log.info_level, "launching connection manager")
     Log.log(Log.info_level, "Max client timeout : {}s".format(
         server.get_user_info("timeout")))
+    Log.log(Log.info_level, "Resource list : {}".format(
+        server.get_resource_list()[0].name))
     global_vars.max_client_execution_time = server.get_user_info("timeout")
     global_vars.resource_free_delay = server.get_user_info(
         "resource_free_delay")
     global_vars.reconnexion_retries = server.get_user_info(
         "reconnexion_retries")
 
+    t = threading.Thread(target=launchServer, args=(server,))
+    t.start()
 
-    launchServer(server)
+    app = create_app()
+    app.config['server_data'] = server
+    app.run(host=server.get_user_info("address"),
+            port=server.get_user_info("web_port"), debug=False)
+
+    t.join()
     Log.log(Log.info_level, "server exit")
     time.sleep(1)
     log_mgr.stop_logger_mgr()

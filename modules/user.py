@@ -8,7 +8,7 @@ from resource_mgr import Resource, ResourceMgr
 
 class User:
     __user_list = []
-    __resource_list = ResourceMgr()
+    __resource_mgr = ResourceMgr()
     __total_count = 0
     __active_count = 0
 
@@ -162,7 +162,7 @@ class User:
 
     def get_resource(self) -> Resource:
         id = self.__user_info["resource"]
-        return User.__resource_list.get_resource_by_id(id)
+        return User.__resource_mgr.get_resource_by_id(id)
 
     def is_next_in_line(self) -> bool:
         resource = self.get_resource()
@@ -174,7 +174,7 @@ class User:
 
     def init_resources(self, resources):
         for r in resources:
-            User.__resource_list.add_resource(Resource(r["name"], r["info"]))
+            User.__resource_mgr.add_resource(Resource(r["name"], r["info"]))
 
     def add_to_resource_waiting_list(self):
         resource = self.get_resource()
@@ -183,6 +183,9 @@ class User:
     def remove_from_resource_waiting_list(self):
         resource = self.get_resource()
         resource.free_resource(self)
+
+    def get_resource_list(self):
+        return self.__resource_mgr.resource_list
 
 
 if __name__ == "__main__":
