@@ -4,10 +4,6 @@
             <div class="row">
                 <div class="col">
                     <h6>Resources</h6>
-                    <p class="text-sm">
-                        <i class="fa fa-check text-info" aria-hidden="true"></i>
-                        <span class="font-weight-bold ms-1">36 done</span> this month
-                    </p>
                 </div>
                 <div class="col col my-auto text-end">
                     <div class="dropdown float-lg-end pe-4">
@@ -90,7 +86,7 @@
 
                                 {% else %}
                                 <h6 class="mb-0 text-sm">{{
-                                    resource.get_first_user_in_line().get_user_info("start_time") }}
+                                    resource.get_first_user_in_line().get_user_start_date() }}
                                 </h6>
                                 {% endif %}
                             </td>
@@ -99,8 +95,7 @@
 
                                 {% else %}
                                 <h6 class="mb-0 text-sm">{{
-                                    resource.get_first_user_in_line().get_user_info("start_time") +
-                                    resource.get_first_user_in_line().get_user_info("timeout") }}
+                                    resource.get_first_user_in_line().get_user_end_date() }}
                                 </h6>
                                 {% endif %}
                             </td>

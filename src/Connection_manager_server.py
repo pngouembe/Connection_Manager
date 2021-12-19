@@ -173,8 +173,6 @@ def launchServer(server: User):
         user = User()
         user.add_private_info({"socket_obj": conn, "ip_addr": addr})
         user.register_logger(Log)
-        Log.log(Log.info_level, "addr: {}".format(
-            user.get_user_info("ip_addr")))
         t = threading.Thread(target=client_handler, args=(user,))
         t.start()
         del user
@@ -197,10 +195,9 @@ def main(argv):
     global_vars.init()
 
     Log.log(Log.info_level, "launching connection manager")
-    Log.log(Log.info_level, "Max client timeout : {}s".format(
-        server.get_user_info("timeout")))
-    Log.log(Log.info_level, "Resource list : {}".format(
-        server.get_resource_list()[0].name))
+    if server.get_user_info("timeout"):
+        Log.log(Log.info_level, "Max client timeout : {}s".format(
+            server.get_user_info("timeout")))
     global_vars.max_client_execution_time = server.get_user_info("timeout")
     global_vars.resource_free_delay = server.get_user_info(
         "resource_free_delay")

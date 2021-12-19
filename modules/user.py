@@ -5,6 +5,7 @@ from json import loads, dumps
 from typing import Any
 from display import Logger
 from resource_mgr import Resource, ResourceMgr
+from datetime import datetime
 
 class User:
     __user_list = []
@@ -52,6 +53,18 @@ class User:
 
     def get_user_comment(self) -> str:
         return self.__user_info["comment"]
+
+    def get_user_start_date(self) -> str:
+        return datetime.fromtimestamp(self.__user_info["start_time"])
+
+    def get_user_end_date(self) -> str:
+        if self.__user_info["timeout"]:
+            ret = datetime.fromtimestamp(
+                self.__user_info["start_time"] + self.__user_info["timeout"])
+        else:
+            ret = "N/A"
+
+        return ret
 
     def get_user_id(self) -> str:
         return self.__private_user_info["id"]
