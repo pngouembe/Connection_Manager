@@ -107,7 +107,8 @@ def launchClient(user: User) -> None:
     Log.log(Log.info_level, "Trying to connect on {}:{}".format(
         user.get_user_info("address"),
         user.get_user_info("port")))
-    s.connect((user.get_user_info("address"), user.get_user_info("port")))
+    addr = socket.gethostbyname(user.get_user_info("address"))
+    s.connect((addr, user.get_user_info("port")))
 
     # dumping user's public info to send them to the server
     payload = user.json_dump()

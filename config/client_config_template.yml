@@ -7,7 +7,7 @@ Entity_type: Client
 # The name that will be referenced in the connection logs
 name: test client
 
-# IP address of the server
+# IP address of the server, can be a hostname
 address: localhost
 
 # Port to use to connect to the server
