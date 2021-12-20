@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+import yaml
+import re
 class Resource:
     __resource_nb = 0
 
@@ -35,6 +37,14 @@ class Resource:
         self.__remove_user_from_line(user)
         if not self.waiting_list:
             self.is_free = True
+
+    def display_info(self):
+        info_str = str(self.info)
+        tmp = {}
+        for i in self.info:
+            tmp.update(i)
+        info_str: str = re.sub('[\{\}]', '', yaml.dump(tmp))
+        return info_str
 
 
 class ResourceMgr:

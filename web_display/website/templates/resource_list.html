@@ -74,12 +74,13 @@
                                 </div>
 
                             </td>
-                            <td class="align-middle text-center text-sm">
-                                <span class="text-xs font-weight-bold">
-                                    {% if not resource.is_free %}
-                                    {{ resource.get_first_user_in_line().get_user_comment() }}
-                                    {% endif %}
-                                </span>
+                            <td class="align-middle text-left text-sm">
+                                <div class="text-xs font-weight-bold">
+                                    {% for line in resource.display_info().split("\n") %}
+                                    <p  class="text-xs font-weight-bold text-left"
+                                        style=  "white-space: pre; line-height: 0.3em">{{ line }}</p>
+                                    {% endfor %}
+                                </div>
                             </td>
                             <td class="align-middle text-center">
                                 {% if resource.is_free %}

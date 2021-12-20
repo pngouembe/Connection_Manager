@@ -16,7 +16,7 @@ views = Blueprint('views', __name__)
 
 
 @views.route('/', methods=['GET', 'POST'])
-#@login_required
+# @login_required
 def dashboard():
     if request.method == 'POST':
         note = request.form.get('note')
@@ -35,7 +35,7 @@ def dashboard():
         print(r["info"])
         rsrc_list.append(Resource(r["name"], r["info"]))
     rsrc_list[0].get_resource(
-        User(user_info={"name":"toto", "comment":"salut"}))
+        User(user_info={"name": "toto", "comment": "salut"}))
     rsrc_list[0].get_resource(
         User(user_info={"name": "tata", "comment": "coucou"}))
     rsrc_list[0].get_resource(
@@ -44,18 +44,18 @@ def dashboard():
     #     User(user_info={"name": "testing with extra characters to see behavior", "comment": "Need to see if having a long message is breaking the display", "timeout": 10000000000}))
     # rsrc_list[1].get_resource(
     #     User(user_info={"name": "testing with extra characters to see behavior", "comment": "Need to see if having a long message is breaking the display", "timeout": 10000000000}))
-    err=0
-    warn=1
-    info=2
-    dbg=3
-    log_buffer=[
-        (err,"testing error logs"),
-        (warn,"testing warn logs"),
-        (info,"testing info logs"),
-        (dbg,"testing debug logs")]
+    err = 0
+    warn = 1
+    info = 2
+    dbg = 3
+    log_buffer = [
+        (err, "testing error logs"),
+        (warn, "testing warn logs"),
+        (info, "testing info logs"),
+        (dbg, "testing debug logs")]
     for i in range(25):
         log_buffer.append((info, "testing info logs"))
-    return render_template("dashboard.html", resource_list=rsrc_list, log_buffer=log_buffer )
+    return render_template("dashboard.html", resource_list=rsrc_list, log_buffer=log_buffer)
 
 
 @views.route('/home')
