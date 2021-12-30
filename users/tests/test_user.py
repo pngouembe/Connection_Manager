@@ -1,5 +1,5 @@
 import unittest
-from users import user, create_user, userDuplicateError
+from users import user, create_user, userDuplicateError, missingRequiredFields
 from dataclasses import asdict, FrozenInstanceError
 
 
@@ -37,10 +37,10 @@ class TestUserMethods(unittest.TestCase):
             "foo": "bar",
             "id": 0,
             "a": 10}
-        with self.assertRaises(TypeError):
+        with self.assertRaises(missingRequiredFields):
             self.user3 = create_user(self.user_dict)
 
-        with self.assertRaises(TypeError):
+        with self.assertRaises(missingRequiredFields):
             self.user3 = create_user({})
 
     def test_userDuplicateError(self):

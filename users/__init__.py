@@ -11,6 +11,9 @@ class userDuplicateError(Exception):
     pass
 
 
+class missingRequiredFields(Exception):
+    pass
+
 @dataclass(frozen=True)
 class user:
     """
@@ -57,4 +60,7 @@ def create_user(user_info: dict) -> user:
     field_list = []
     for key, value in user_info.items():
         field_list.append((key, type(value), field()))
-    return make_dataclass('user', field_list, bases=(user,), frozen=True)(**user_info)
+    try :
+        return make_dataclass('user', field_list, bases=(user,), frozen=True)(**user_info)
+    except TypeError:
+        raise missingRequiredFields("Missing required fields in the given user info")
