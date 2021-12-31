@@ -1,5 +1,5 @@
 import unittest
-from users import user, create_user, userDuplicateError, missingRequiredFields
+from users import user, user_from_dict, userDuplicateError, missingRequiredFields
 from dataclasses import asdict, FrozenInstanceError
 
 
@@ -16,7 +16,7 @@ class TestUserMethods(unittest.TestCase):
         self.user2.update(self.user.serialize())
         self.assertEqual(self.user, self.user2)
 
-    def test_create_user(self):
+    def test_user_from_dict(self):
         self.user_dict = {
             "name": "test_user3",
             "ip_addr": "127.0.0.1",
@@ -24,7 +24,7 @@ class TestUserMethods(unittest.TestCase):
             "foo": "bar",
             "id": 0,
             "a": 10}
-        self.user3 = create_user(self.user_dict)
+        self.user3 = user_from_dict(self.user_dict)
         self.assertEqual(asdict(self.user3), self.user_dict)
 
         # checking that the class is read-only
@@ -38,10 +38,10 @@ class TestUserMethods(unittest.TestCase):
             "id": 0,
             "a": 10}
         with self.assertRaises(missingRequiredFields):
-            self.user3 = create_user(self.user_dict)
+            self.user3 = user_from_dict(self.user_dict)
 
         with self.assertRaises(missingRequiredFields):
-            self.user3 = create_user({})
+            self.user3 = user_from_dict({})
 
     def test_userDuplicateError(self):
         with self.assertRaises(userDuplicateError):

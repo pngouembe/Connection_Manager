@@ -6,6 +6,10 @@ from dataclasses import asdict, dataclass, field, make_dataclass
 import yaml
 
 
+class missingRequiredFields(Exception):
+    pass
+
+
 @dataclass
 class resource:
     """
@@ -17,12 +21,10 @@ class resource:
     name: str = field()
     id: int = field()
     user_list: list = field(default_factory=list)
-
-    def __str__(self) -> str:
-        return self.name
+    is_usable: bool = field(default=True)
 
     def __post_init__(self) -> None:
-        pass
+        self.is_free = True
 
     def serialize(self) -> str:
         """
@@ -37,8 +39,23 @@ class resource:
         """
         self.__dict__.update(yaml.safe_load(str))
 
+    def add_user(self, user) -> None:
+        """
+        Add user given in argument to the resource user waiting list
+        """
+        self.user_list.append(user)
+        self.is_free = False
 
-def create_resource(resource_info: dict) -> resource:
+    def remove_user(self, user) -> None:
+        """
+        Remove the user given in argument from the resource user waiting list
+        """
+        self.user_list.remove(user)
+        if not self.user_list:
+            self.is_free = True
+
+
+def resource_from_dict(resource_info: dict) -> resource:
     """
     This function allow to dynamically create user object as
     dataclasses with the fields given.
@@ -46,4 +63,8 @@ def create_resource(resource_info: dict) -> resource:
     field_list = []
     for key, value in resource_info.items():
         field_list.append((key, type(value), field()))
-    return make_dataclass('resource', field_list, bases=(resource,))(**resource_info)
+    try:
+        return make_dataclass('resource', field_list, bases=(resource,))(**resource_info)
+    except TypeError:
+        raise missingRequiredFields(
+            "Missing required fields in the given user info")

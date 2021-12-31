@@ -52,7 +52,7 @@ class user:
         self.__dict__.update(yaml.safe_load(str))
 
 
-def create_user(user_info: dict) -> user:
+def user_from_dict(user_info: dict) -> user:
     """
     This function allow to dynamically create user object as
     dataclasses with the fields given.
