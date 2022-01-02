@@ -1,0 +1,63 @@
+# -*- coding: utf-8 -*-
+"""Configuration module
+This module is made to allow program to load its configuration
+from an external config file.
+This version of the module is made to import yaml configuration
+files.
+"""
+from abc import abstractmethod
+import os
+import yaml
+
+
+class unsupportedFileError(Exception):
+    pass
+
+
+class configFile:
+    yaml = '.yml'
+
+    @classmethod
+    def get_handler(cls, file: str):
+        file_ext = os.path.splitext(file)[1].lower()
+        if file_ext not in vars(cls).values():
+            raise unsupportedFileError("{} extention not supported yet".format(file_ext))
+        elif file_ext == cls.yaml:
+            return yamlConfigFile()
+
+    @abstractmethod
+    def as_dict_from_file(cfg_file_path: str) -> dict:
+        """
+        This method return a dictionnary representing the configuration
+        file passed in argument
+        """
+        pass
+
+
+class yamlConfigFile(configFile):
+    def as_dict_from_file(self, cfg_file_path: str) -> dict:
+        """
+        This method return a dictionnary representing the yaml configuration
+        file passed in argument
+        """
+        with open(cfg_file_path) as f:
+            dict = yaml.safe_load(f)
+        return dict
+
+
+class Config():
+
+    @abstractmethod
+    def setup_argument_parser():
+        pass
+
+    @classmethod
+    def as_dict(cls) -> dict:
+        parser = cls.setup_argument_parser()
+        args = parser.parse_args()
+        cfg_dict = dict()
+        if args.cfg_file:
+            file_handler = configFile.get_handler(file=args.cfg_file)
+            cfg_dict = file_handler.as_dict_from_file(args.cfg_file)
+        cfg_dict.update(vars(args))
+        return cfg_dict
