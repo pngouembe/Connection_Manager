@@ -1,9 +1,12 @@
 import argparse
-from config import Config, __path__
+from config import Config, __path__, MissingRequiredInfo
 import os
 
 
-class clientConfig(Config):
+class ClientConfig(Config):
+
+    required_info = ["name", "address", "resource"]
+
     def setup_argument_parser():
         default_cfg = "client_config_template.yml"
         parser = argparse.ArgumentParser(prog='Client-side connection manager',

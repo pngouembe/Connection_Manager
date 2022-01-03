@@ -1,5 +1,6 @@
 import unittest
 import config
+import config.client
 import config.server
 import config.tests
 import os
@@ -10,6 +11,8 @@ class TestConfigFileMethods(unittest.TestCase):
     unsupported_file = "test.md"
 
     server_test_file = os.path.join(config.__path__[0], "server_config_template.yml")
+    client_test_file = os.path.join(
+        config.__path__[0], "client_config_template.yml")
     test_file = os.path.join(config.tests.__path__[0], "test.yml")
     handle_class = config.YamlConfigFile
     exp_dict = {
@@ -44,3 +47,14 @@ class TestConfigFileMethods(unittest.TestCase):
         # Check that incomplete server config file loaded raises an error
         with self.assertRaises(config.MissingRequiredInfo):
             server_cfg.check_for_required(self.exp_dict)
+
+    def test_client_cfg_check(self):
+        handler = config.ConfigFile.get_handler(self.test_file)
+        dict = handler.as_dict_from_file(self.client_test_file)
+        client_cfg = config.client.ClientConfig()
+
+        client_cfg.check_for_required(dict)
+
+        # Check that incomplete client config file loaded raises an error
+        with self.assertRaises(config.MissingRequiredInfo):
+            client_cfg.check_for_required(self.exp_dict)

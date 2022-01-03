@@ -52,16 +52,19 @@ class YamlConfigFile(ConfigFile):
 
 class Config():
 
+    required_info = []
     @abstractmethod
     def setup_argument_parser():
         pass
 
-    @abstractmethod
     def check_for_required(self, loaded_info: dict):
         """
         Checks if the required information are contained in a given dict
         """
-        pass
+        missing_info = set(self.required_info) - set(loaded_info.keys())
+        if missing_info:
+            raise MissingRequiredInfo(
+                "The following infos are missing from your config file {}".format(missing_info))
 
     @classmethod
     def as_dict(cls) -> dict:

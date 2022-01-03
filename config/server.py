@@ -1,9 +1,12 @@
 import argparse
 import os
-from config import Config, __path__
+from config import Config, __path__, MissingRequiredInfo
 
 
-class serverConfig(Config):
+class ServerConfig(Config):
+
+    required_info = ["address", "port"]
+
     def setup_argument_parser():
         default_cfg = "server_config_template.yml"
         default_resource = "resource_template.yml"
