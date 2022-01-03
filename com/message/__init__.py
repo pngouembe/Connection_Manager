@@ -1,12 +1,12 @@
 from dataclasses import dataclass
 from com import header, header_list
 import re
-from typing import List
+from typing import List, Union
 
 separator = "|||"
 prefix = "$$$"
 suffix = "~~~"
-pattern = r'((\${3}(?P<header>\d+)\|{3}(?P<payload>.*)~{3}))'
+pattern = r'((\${3}(?P<header>\d+)\|{3}(?P<payload>[\s\S]*)~{3}))'
 
 
 class PayloadError(Exception):
@@ -33,8 +33,11 @@ def generate(header, payload) -> str:
         return prefix + str(header) + separator + str(payload) + suffix
 
 
-def decode(msg: str) -> List[Message]:
+def decode(msg: Union[str, bytes]) -> List[Message]:
     message_list = []
+    if isinstance(msg, bytes):
+        msg = msg.decode(encoding='raw_unicode_escape')
+
     for split_msg in msg.split(suffix + prefix):
         if not split_msg.endswith(suffix):
             split_msg += suffix

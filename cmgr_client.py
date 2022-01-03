@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from config.client import clientConfig as config
+from config.client import ClientConfig as config
 from rich import print, inspect
 from rich.pretty import pprint
 

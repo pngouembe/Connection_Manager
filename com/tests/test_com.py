@@ -48,5 +48,13 @@ class TestComMethods(unittest.TestCase):
         # Testing no header
         rcv_str = self.msg_pattern.format('', "No header!")
         msg_list = message.decode(rcv_str)
-        exp_msg_list = [message.Message(header.INVALID, special_char_str)]
+        exp_msg_list = [message.Message(
+            header.INVALID, 'Received message incomplete, missing header or payload')]
+        self.assertEqual(msg_list, exp_msg_list)
+
+        rcv_str = b"$$$2|||name: Test client\naddress: 127.0.0.1\nresource: 0\n~~~"
+        msg_list = message.decode(rcv_str)
+        exp_msg_list = [message.Message(
+            header.INTRODUCE,
+            'name: Test client\naddress: 127.0.0.1\nresource: 0\n')]
         self.assertEqual(msg_list, exp_msg_list)
