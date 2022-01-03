@@ -6,12 +6,12 @@ from dataclasses import asdict, dataclass, field, make_dataclass
 import yaml
 
 
-class missingRequiredFields(Exception):
+class MissingRequiredFields(Exception):
     pass
 
 
 @dataclass
-class resource:
+class Resource:
     """
     resource dataclass allowing the storage of resource information
     and the exchange of it between users
@@ -55,7 +55,7 @@ class resource:
             self.is_free = True
 
 
-def resource_from_dict(resource_info: dict) -> resource:
+def resource_from_dict(resource_info: dict) -> Resource:
     """
     This function allow to dynamically create user object as
     dataclasses with the fields given.
@@ -64,7 +64,7 @@ def resource_from_dict(resource_info: dict) -> resource:
     for key, value in resource_info.items():
         field_list.append((key, type(value), field()))
     try:
-        return make_dataclass('resource', field_list, bases=(resource,))(**resource_info)
+        return make_dataclass('resource', field_list, bases=(Resource,))(**resource_info)
     except TypeError:
-        raise missingRequiredFields(
+        raise MissingRequiredFields(
             "Missing required fields in the given user info")

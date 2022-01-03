@@ -1,22 +1,22 @@
 import unittest
-from resources import resource, resource_from_dict, missingRequiredFields
-from users import user
+from resources import Resource, resource_from_dict, MissingRequiredFields
+from users import User
 from dataclasses import asdict, field
 
 
 class TestResourceMethods(unittest.TestCase):
 
     def setUp(self):
-        self.resource = resource(
+        self.resource = Resource(
             name="test_resource",
             id=0)
-        self.resource_user = user(name="test user", ip_addr="127.0.0.1")
+        self.resource_user = User(name="test user", address="127.0.0.1")
 
     def tearDown(self):
-        user.users_ids = []
+        User.users_ids = []
 
     def test_update(self):
-        self.resource2 = resource(name="resource2", id=1)
+        self.resource2 = Resource(name="resource2", id=1)
         self.resource2.update(self.resource.serialize())
         self.assertEqual(self.resource, self.resource2)
 
@@ -37,29 +37,29 @@ class TestResourceMethods(unittest.TestCase):
             "foo": "bar",
             "id": 0,
             "a": 10}
-        with self.assertRaises(missingRequiredFields):
+        with self.assertRaises(MissingRequiredFields):
             self.resource3 = resource_from_dict(self.resource_dict)
 
-        with self.assertRaises(missingRequiredFields):
+        with self.assertRaises(MissingRequiredFields):
             self.resource3 = resource_from_dict({})
 
     def test_str_representation(self):
         self.assertEqual(str(
             self.resource),
-            "resource(name='test_resource', id=0, user_list=[], is_usable=True)")
+            "Resource(name='test_resource', id=0, user_list=[], is_usable=True)")
 
     def test_add_user(self):
         self.resource.add_user(self.resource_user)
         self.assertEqual(str(
             self.resource),
-            "resource(name='test_resource', id=0, user_list=[user(name='test user', ip_addr='127.0.0.1', resource=0)], is_usable=True)")
+            "Resource(name='test_resource', id=0, user_list=[User(name='test user', address='127.0.0.1', resource=0)], is_usable=True)")
 
     def test_remove_user(self):
         self.resource.add_user(self.resource_user)
         self.resource.remove_user(self.resource_user)
         self.assertEqual(str(
             self.resource),
-            "resource(name='test_resource', id=0, user_list=[], is_usable=True)")
+            "Resource(name='test_resource', id=0, user_list=[], is_usable=True)")
 
 if __name__ == '__main__':
     unittest.main()

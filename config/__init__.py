@@ -10,20 +10,25 @@ import os
 import yaml
 
 
-class unsupportedFileError(Exception):
+class UnsupportedFileError(Exception):
     pass
 
 
-class configFile:
+class MissingRequiredInfo(Exception):
+    pass
+
+
+class ConfigFile:
     yaml = '.yml'
 
     @classmethod
     def get_handler(cls, file: str):
         file_ext = os.path.splitext(file)[1].lower()
         if file_ext not in vars(cls).values():
-            raise unsupportedFileError("{} extention not supported yet".format(file_ext))
+            raise UnsupportedFileError(
+                "{} extention not supported yet".format(file_ext))
         elif file_ext == cls.yaml:
-            return yamlConfigFile()
+            return YamlConfigFile()
 
     @abstractmethod
     def as_dict_from_file(cfg_file_path: str) -> dict:
@@ -34,7 +39,7 @@ class configFile:
         pass
 
 
-class yamlConfigFile(configFile):
+class YamlConfigFile(ConfigFile):
     def as_dict_from_file(self, cfg_file_path: str) -> dict:
         """
         This method return a dictionnary representing the yaml configuration
@@ -51,13 +56,21 @@ class Config():
     def setup_argument_parser():
         pass
 
+    @abstractmethod
+    def check_for_required(self, loaded_info: dict):
+        """
+        Checks if the required information are contained in a given dict
+        """
+        pass
+
     @classmethod
     def as_dict(cls) -> dict:
         parser = cls.setup_argument_parser()
         args = parser.parse_args()
         cfg_dict = dict()
         if args.cfg_file:
-            file_handler = configFile.get_handler(file=args.cfg_file)
+            file_handler = ConfigFile.get_handler(file=args.cfg_file)
             cfg_dict = file_handler.as_dict_from_file(args.cfg_file)
         cfg_dict.update(vars(args))
+        cls.check_for_required(cls, cfg_dict)
         return cfg_dict

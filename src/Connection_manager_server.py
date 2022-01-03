@@ -171,7 +171,7 @@ def launchServer(server: User):
         except KeyboardInterrupt:
             break
         user = User()
-        user.add_private_info({"socket_obj": conn, "ip_addr": addr})
+        user.add_private_info({"socket_obj": conn, "address": addr})
         user.register_logger(Log)
         t = threading.Thread(target=client_handler, args=(user,))
         t.start()
