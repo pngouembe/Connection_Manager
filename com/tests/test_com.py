@@ -58,3 +58,7 @@ class TestComMethods(unittest.TestCase):
             header.INTRODUCE,
             'name: Test client\naddress: 127.0.0.1\nresource: 0\n')]
         self.assertEqual(msg_list, exp_msg_list)
+
+
+if __name__ == '__main__':
+    unittest.main()

@@ -58,3 +58,7 @@ class TestConfigFileMethods(unittest.TestCase):
         # Check that incomplete client config file loaded raises an error
         with self.assertRaises(config.MissingRequiredInfo):
             client_cfg.check_for_required(self.exp_dict)
+
+
+if __name__ == '__main__':
+    unittest.main()
