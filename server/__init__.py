@@ -1,8 +1,8 @@
 from socket import socket, timeout
 from socket import AF_INET, SOCK_STREAM, SOL_SOCKET, SO_REUSEADDR
 import threading
-from users import User
-from .dataclass import Server
+from sdataclasses.uniquedataclass.users import User
+from sdataclasses.servers import Server
 from .handlers import ClientHandlerThread
 from com import header, message
 
@@ -45,8 +45,7 @@ def launch_server(server_config: Server):
         msg_list: message.Message = message.decode(data)
         for msg in msg_list:
             if msg.header == header.INTRODUCE:
-                user = User.deserialize(
-                    msg.payload, address=addr[0], port=addr[1])
+                user = User.deserialize(msg.payload, address=addr[0], port=addr[1])
                 threads.append(ClientHandlerThread(
                     client_data=user, client_socket=conn, run_event=run_event))
                 threads[-1].start()

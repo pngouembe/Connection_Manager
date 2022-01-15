@@ -49,42 +49,76 @@ class TestSDataclassMethods(unittest.TestCase):
 
     invalid_dict = {}
 
-    @parameterized.expand([
-        ("SerializableDataclass", SerializableDataclass, valid_dict, invalid_dict),
+    # parameter lists
+    sdc_list = [
         ("Resource", Resource, valid_dict, invalid_dict),
         ("Server", Server, valid_dict, invalid_dict)
-    ])
-    def test_SDataclass(self, name, cls: SerializableDataclass, valid_dict: dict, invalid_dict: dict):
+    ]
+
+    usdc_list = [
+        ("User", User, immutable_valid_dict, invalid_dict)
+    ]
+
+    all_list = sdc_list + usdc_list
+
+    @parameterized.expand(all_list)
+    def test_dataclass_from_dict(self, name, cls, valid_dict, invalid_dict):
         t: SerializableDataclass = cls(**valid_dict)
         for k, v in valid_dict.items():
             self.assertEqual(v, getattr(t, k))
         with self.assertRaises(MissingRequiredFields):
             t = cls(**invalid_dict)
+        del t
+
+    @parameterized.expand(all_list)
+    def test_dataclass_from_args(self, name, cls, valid_dict, invalid_dict):
+        arg_list = []
+        for k in cls.__dataclass_fields__.keys():
+            if k in valid_dict.keys():
+                arg_list.append(valid_dict[k])
+
+        t: SerializableDataclass = cls(*arg_list)
+
+        with self.assertRaises(MissingRequiredFields):
+            cls(*invalid_dict.values())
+
+        del t
+
+    @parameterized.expand(all_list)
+    def test_dataclass_update(self, name, cls: SerializableDataclass, valid_dict: dict, invalid_dict: dict):
+        t: SerializableDataclass = cls(**valid_dict)
         valid_dict_copy = valid_dict.copy()
         valid_dict_copy.update(self.update_dict)
         t2: SerializableDataclass = cls(**valid_dict_copy)
-        t.update(asdict(t2))
-        self.assertEqual(t, t2)
-        with self.assertRaises(UnknownFieldError):
-            t2.update(**self.invalid_update_dict)
+        if isinstance(t, UniqueSerializableDataclass):
+            with self.assertRaises(FrozenInstanceError):
+                t.update(asdict(t2))
+        else:
+            t.update(asdict(t2))
+            self.assertEqual(t, t2)
+            with self.assertRaises(UnknownFieldError):
+                t2.update(**self.invalid_update_dict)
+        del t
+        del t2
 
-    @parameterized.expand([
-        ("Unique_sdc", UniqueSerializableDataclass,
-         immutable_valid_dict, invalid_dict),
-        ("User", User, immutable_valid_dict, invalid_dict)
-    ])
-    def test_UniqueDataclass(self, name, cls: SerializableDataclass, valid_dict: dict, invalid_dict: dict):
+    @parameterized.expand(usdc_list)
+    def test_dataclass_unique(self, name, cls: SerializableDataclass, valid_dict: dict, invalid_dict: dict):
         t: SerializableDataclass = cls(**valid_dict)
-        for k, v in valid_dict.items():
-            self.assertEqual(v, getattr(t, k))
         with self.assertRaises(FrozenInstanceError):
             t.name = "Trying to set attribute"
-        with self.assertRaises(FrozenInstanceError):
-            t.update({})
         with self.assertRaises(DuplicateError):
             cls(**valid_dict)
-        with self.assertRaises(MissingRequiredFields):
-            cls(**invalid_dict)
+        del t
+
+    @parameterized.expand(all_list)
+    def test_dataclass_serialize_deserialize(self, name, cls: SerializableDataclass, valid_dict: dict, invalid_dict: dict):
+        t: SerializableDataclass = cls(**valid_dict)
+        s = t.serialize()
+        self.assertIsInstance(s, str)
+        del t
+        t2 = cls.deserialize(s)
+        self.assertIsInstance(t2, cls)
+        del t2
 
 
 if __name__ == '__main__':

@@ -1,4 +1,4 @@
-from users import User
+from sdataclasses.uniquedataclass.users import User
 import threading
 from socket import socket, timeout
 from com import message

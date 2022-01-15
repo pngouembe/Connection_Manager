@@ -1,13 +1,9 @@
 test:  module_test functionnal_test
 
-module_test: resources_tests users_tests com_tests config_tests sdataclasses_tests
+module_test: com_tests config_tests sdataclasses_tests
 
 functionnal_test: server_tests
 
-resources_tests:
-	python -m unittest discover -s resources -v
-users_tests:
-	python -m unittest discover -s users -v
 com_tests:
 	python -m unittest discover -s com -v
 config_tests:

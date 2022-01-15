@@ -8,9 +8,11 @@ features:
 - Updating dataclasses from a dict
 
 """
+from dataclasses import (_MISSING_TYPE, Field, asdict, dataclass, field,
+                         make_dataclass)
 from typing import List
-from dataclasses import asdict, dataclass, field, make_dataclass, Field
-from serializers import SerializerType, SerializerFactory
+
+from serializers import SerializerFactory, SerializerType
 
 
 class MissingRequiredFields(Exception):
@@ -24,6 +26,13 @@ class UnknownFieldError(Exception):
 
 
 _serializer = SerializerFactory(SerializerType.YAML)
+
+
+class _No_dict:
+    pass
+
+
+
 
 @dataclass
 class DictDataclass:
@@ -45,37 +54,66 @@ class DictDataclass:
     """
     _classes = {}
 
-    def __new__(cls, *args, input_dict: dict = None, **kwargs):
-        cls.req_fields = [k for k in cls.__dataclass_fields__.keys()]
-        if not input_dict and not kwargs:
+    def __new__(cls, *args, **kwargs):
+        cls.exp_fields = [k for k in cls.__dataclass_fields__.keys()]
+
+        # get required fields among expected fields
+        cls.req_fields = []
+        for k in cls.exp_fields:
+            f = cls.__dataclass_fields__[k]
+            inst_check = (isinstance(f.default, _MISSING_TYPE), isinstance(f.default_factory, _MISSING_TYPE))
+            if inst_check == (True, True):
+                cls.req_fields.append(k)
+
+        if not kwargs and not args:
             raise MissingRequiredFields(cls.req_fields)
-        if not input_dict:
-            input_dict = {}
-        input_dict.update(kwargs)
-        input_keys = input_dict.keys()
 
-        # Check if the generation of a new class is needed
-        if set(cls.req_fields) != set(input_keys):
-            s = set(cls.req_fields) - set(input_keys)
-            if s:
-                raise MissingRequiredFields(s)
+        input_keys = []
+        if kwargs:
+            input_keys = kwargs.keys()
 
+        # Adding positional args in the dict
+        if args:
+            if len(args) > len(cls.exp_fields):
+                msg = "Too many positional argument, expecting {} got {}"
+                msg = msg.format(len(cls.exp_fields), len(args))
+                raise ValueError(msg)
+            for i, arg in enumerate(args):
+                if cls.exp_fields[i] in input_keys:
+                    msg = "Two arguments for the {} field (positional and named argument)"
+                    msg = msg.format(
+                        cls.exp_fields[i])
+                    raise ValueError(msg)
+                else:
+                    kwargs[cls.exp_fields[i]] = arg
+            input_keys = kwargs.keys()
+
+        missing_fields = set(cls.req_fields) - set(input_keys)
+        if missing_fields:
+            raise MissingRequiredFields(missing_fields)
+
+        # Check if the generation of a new class due to extra fields is needed
+        extra_fields = set(input_keys) - set(cls.exp_fields)
+        if not extra_fields:
+            return super().__new__(cls)
+        else:
             input_fields = frozenset([(k, type(v))
-                                     for k, v in input_dict.items()])
+                                     for k, v in kwargs.items()])
 
             # checking if the class have already been generated
             if input_fields in cls._classes.keys():
                 if cls.__name__ in cls._classes[input_fields].keys():
                     new_cls = cls._classes[input_fields][cls.__name__]
-                    return new_cls(**input_dict)
+                    return new_cls(**kwargs)
             else:
                 cls._classes[input_fields] = {}
 
             # Extract the field list from the args given to the constructor
+            # if the fields already exists, keep their characteristics
             field_list = []
-            for k, v in input_dict.items():
+            for k, v in kwargs.items():
                 t = type(v)
-                if k in cls.req_fields:
+                if k in cls.exp_fields:
                     field_flags = {
                         'init': cls.__dataclass_fields__[k].init,
                         'repr': cls.__dataclass_fields__[k].repr,
@@ -103,9 +141,7 @@ class DictDataclass:
                 cls.__name__, field_list, bases=(cls, *cls.__bases__), **class_flags)
             # Saving generated class for future use
             cls._classes[input_fields].update({cls.__name__: new_cls})
-            return new_cls(**input_dict)
-        return super().__new__(cls)
-
+            return new_cls(**kwargs)
 
 @dataclass
 class SerializableDataclass(DictDataclass):
@@ -113,18 +149,18 @@ class SerializableDataclass(DictDataclass):
     This dataclass can be initialized using a dict by calling the constructor
     passing your dict as the kwargs named argument
     """
+
     def serialize(self, **kwargs) -> str:
         """
         This function allow to serialize the dataclass.
         Additional information can be passed using kwargs argument
         """
-        _serializer.serialize(dict=asdict(self), **kwargs)
+        return _serializer.serialize(dict=asdict(self), **kwargs)
 
     @classmethod
     def deserialize(cls, str: str, **kwargs):
-        print(cls)
         dict = _serializer.deserialize(str, **kwargs)
-        return cls(dict=dict)
+        return cls(**dict)
 
     def update(self, dict: dict = None, **kwargs) -> None:
         if not dict:
