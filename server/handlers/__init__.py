@@ -1,7 +1,10 @@
-from sdataclasses.uniquedataclass.users import User
 import threading
 from socket import socket, timeout
-from com import message
+
+from com import header, message
+from sdataclasses.uniquedataclass.users import User
+
+import actions
 
 
 class ClientHandlerThread(threading.Thread):
@@ -20,19 +23,28 @@ class ClientHandlerThread(threading.Thread):
                 self.client_socket.send(message.ping().encode())
                 try:
                     msg = self.client_socket.recv(1024)
-                    exp_msg = message.pong()
-                    assert exp_msg in msg.decode()
+                    msg_list = message.decode(msg)
+                    ping_handled = False
+                    for m in msg_list:
+                        if m.header == header.PING:
+                            if actions.handle(self.client_data,
+                                              m.header, m.payload):
+                                ping_handled = True
+                            else:
+                                err_msg = message.generate(
+                                    header.END_CONNECTION, "Invalid ping response, ending connection")
+                                self.client_socket.send(err_msg.encode())
+                    if not ping_handled:
+                        break
                 except timeout:
                     print("No response from client")
-                    break
-                except AssertionError:
-                    print("Client response to ping is incorrect")
                     break
 
             if not msg:
                 break
             else:
-                msg_list = message.decode(msg.decode())
+                msg_list = message.decode(msg)
                 print(msg_list)
         self.client_socket.close()
+        self.client_data.__del__()
         print("Ending {} thread".format(self.name))

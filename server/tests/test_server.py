@@ -43,11 +43,29 @@ class TestServerMethods(unittest.TestCase):
     def test_no_introduction(self):
         time.sleep(socket_timeout + .1)
 
-    def test_send_intro(self):
+    def send_intro(self):
         msg = message.generate(header.INTRODUCE, self.user.serialize())
         self.sock.send(msg.encode())
+
+    def send_pong(self):
+        self.sock.send(message.pong().encode())
+
+    def test_send_intro(self):
+        self.send_intro()
         data = self.sock.recv(1024)
         self.assertEqual(data.decode(), message.ping())
+
+    def test_send_pong(self):
+        self.test_send_intro()
+        self.send_pong()
+        data = self.sock.recv(1024)
+        self.assertEqual(data.decode(), message.ping())
+
+        # Sending a incorrect pong to see server reaction
+        self.sock.send(message.ping().encode())
+        data = self.sock.recv(1024)
+        rcv_msg = message.decode(data)[0]
+        self.assertEqual(rcv_msg.header, header.END_CONNECTION)
 
 
 # class TestServerHandlersMethods(unittest.TestCase):
