@@ -31,7 +31,7 @@ def dashboard():
     with open("../config/resource_template.yml", "r") as f:
         rsrc_dict: dict = yaml.safe_load(f)
     rsrc_list = []
-    for r in rsrc_dict["Resources"]:
+    for r in rsrc_dict["resources"]:
         print(r["info"])
         rsrc_list.append(Resource(r["name"], r["info"]))
     rsrc_list[0].get_resource(

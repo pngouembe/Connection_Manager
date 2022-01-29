@@ -1,10 +1,14 @@
+from queue import Queue
 from socket import socket, timeout
 from socket import AF_INET, SOCK_STREAM, SOL_SOCKET, SO_REUSEADDR
 import threading
+from sdataclasses import MissingRequiredFields
+from sdataclasses.uniquedataclass import DuplicateError
 from sdataclasses.uniquedataclass.users import User
 from sdataclasses.servers import Server
-from .handlers import ClientHandlerThread
-from com import header, message
+from .handlers.clients_handler import ClientHandlerThread
+from .handlers.resoures_handler import ResourceHandlerThread
+from com import Header, message
 
 socket_timeout = 1
 
@@ -28,7 +32,11 @@ def launch_server(server_config: Server):
     threads: list[ClientHandlerThread] = []
     run_event = threading.Event()
     run_event.set()
-    while run_event:
+    request_queue = Queue()
+    t = ResourceHandlerThread(server_config.resources, run_event, request_queue)
+    threads.append(t)
+    t.start()
+    while run_event.is_set():
         try:
             conn, addr = s.accept()
             conn.settimeout(socket_timeout)
@@ -39,16 +47,29 @@ def launch_server(server_config: Server):
         try:
             data = conn.recv(1024)
         except timeout as e:
-            print("Client introducing message not received, closing socket")
+            msg_str = "Client introducing message not received, closing socket"
+            print(msg_str)
+            msg = message.generate(Header.END_CONNECTION, msg_str)
+            conn.send(msg.encode())
             conn.close()
             continue
         msg_list: message.Message = message.decode(data)
         for msg in msg_list:
-            if msg.header == header.INTRODUCE:
-                user = User.deserialize(msg.payload, address=addr[0], port=addr[1])
-                threads.append(ClientHandlerThread(
-                    client_data=user, client_socket=conn, run_event=run_event))
-                threads[-1].start()
+            if msg.header == Header.INTRODUCE:
+                try:
+                    user = User.deserialize(msg.payload, address=addr[0], port=addr[1])
+                except MissingRequiredFields as e:
+                    err_msg = message.generate(Header.END_CONNECTION, e.message)
+                    conn.send(err_msg.encode())
+                    continue
+
+                t = ClientHandlerThread(client_data=user,
+                                        client_socket=conn,
+                                        run_event=run_event,
+                                        request_queue=request_queue)
+                threads.append(t)
+                t.start()
+
     for t in threads:
         if t.is_alive():
             print("Waiting for {} Thread to end".format(t.name))

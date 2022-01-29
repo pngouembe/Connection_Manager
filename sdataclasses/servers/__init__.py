@@ -1,3 +1,4 @@
+from typing import Dict, List
 from dataclasses import dataclass, field
 
 from sdataclasses import SerializableDataclass
@@ -13,3 +14,4 @@ class Server(SerializableDataclass):
     # list of the required fields
     address: str = field(hash=True)
     port: int = field(hash=True)
+    resources: List[Dict] = field(hash=False, compare=False)

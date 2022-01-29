@@ -1,8 +1,15 @@
-INVALID = 0
-END_CONNECTION = 1
-INTRODUCE = 2
-WAIT = 3
-FREE_RESOURCE = 4
-TIMEOUT = 5
-UPDATE = 6
-PING = 7
+from enum import Enum, auto
+
+
+class Header(Enum):
+    INVALID = 0
+    END_CONNECTION = auto()
+    INTRODUCE = auto()
+    CONNECTION_READY = auto()
+    WAIT = auto()
+    FREE_RESOURCE = auto()
+    TIMEOUT = auto()
+    STATUS = auto()
+    PING = auto()
+    REQUEST_RESOURCE = auto()
+    RELEASE_RESOURCE = auto()

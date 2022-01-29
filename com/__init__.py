@@ -1,5 +1,5 @@
-from com import header
+from com.header import Header
 
-header_dict = {k: v for k, v in vars(header).items() if not k.startswith("__")}
+header_dict = {h.name: h.value for h in Header}
 header_list = list(header_dict.values())
 header_max = max(header_list)

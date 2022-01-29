@@ -53,6 +53,9 @@ class YamlConfigFile(ConfigFile):
 class Config():
 
     required_info = []
+    parser = None
+    args = None
+    cfg_dict = dict()
     @abstractmethod
     def setup_argument_parser():
         pass
@@ -68,12 +71,12 @@ class Config():
 
     @classmethod
     def as_dict(cls) -> dict:
-        parser = cls.setup_argument_parser()
-        args = parser.parse_args()
-        cfg_dict = dict()
-        if args.cfg_file:
-            file_handler = ConfigFile.get_handler(file=args.cfg_file)
-            cfg_dict = file_handler.as_dict_from_file(args.cfg_file)
-        cfg_dict.update(vars(args))
-        cls.check_for_required(cls, cfg_dict)
-        return cfg_dict
+        if not cls.parser:
+            cls.parser = cls.setup_argument_parser()
+            cls.args = cls.parser.parse_args()
+        if cls.args.cfg_file:
+            file_handler = ConfigFile.get_handler(file=cls.args.cfg_file)
+            cls.cfg_dict.update(file_handler.as_dict_from_file(cls.args.cfg_file))
+        cls.cfg_dict.update(vars(cls.args))
+        cls.check_for_required(cls, cls.cfg_dict)
+        return cls.cfg_dict

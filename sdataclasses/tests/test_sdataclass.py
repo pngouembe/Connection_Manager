@@ -22,6 +22,7 @@ class TestSDataclassMethods(unittest.TestCase):
         # Server required fields
         'address': '127.0.0.1',
         'port': 65432,
+        'resources': [Resource(name="R0", id=0)],
         # extra_info
         'extra_field': 'testing extra field support'
     }

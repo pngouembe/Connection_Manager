@@ -1,6 +1,8 @@
+from typing import List
 from dataclasses import dataclass, field
 
 from sdataclasses import SerializableDataclass
+from sdataclasses.uniquedataclass.users import User
 
 
 @dataclass(eq=False)
@@ -13,7 +15,7 @@ class Resource(SerializableDataclass):
     # list of the required fields
     name: str = field()
     id: int = field()
-    user_list: list = field(default_factory=list, compare=False)
+    user_list: List[User] = field(default_factory=list, compare=False)
     is_usable: bool = field(default=True)
 
     def __post_init__(self) -> None:
@@ -23,13 +25,17 @@ class Resource(SerializableDataclass):
         """
         Add user given in argument to the resource user waiting list
         """
-        self.user_list.append(user)
-        self.is_free = False
+        if user not in self.user_list:
+            self.user_list.append(user)
+            self.is_free = False
 
     def remove_user(self, user) -> None:
         """
         Remove the user given in argument from the resource user waiting list
         """
-        self.user_list.remove(user)
+        try:
+            self.user_list.remove(user)
+        except ValueError:
+            pass
         if not self.user_list:
             self.is_free = True

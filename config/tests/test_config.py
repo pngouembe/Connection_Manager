@@ -10,8 +10,11 @@ class TestConfigFileMethods(unittest.TestCase):
 
     unsupported_file = "test.md"
 
-    server_test_file = os.path.join(config.__path__[0], "server_config_template.yml")
-    client_test_file = os.path.join(
+    server_cfg_file = os.path.join(
+        config.__path__[0], "server_config_template.yml")
+    server_rsrc_file = os.path.join(
+        config.__path__[0], "resource_template.yml")
+    client_cfg_file = os.path.join(
         config.__path__[0], "client_config_template.yml")
     test_file = os.path.join(config.tests.__path__[0], "test.yml")
     handle_class = config.YamlConfigFile
@@ -38,8 +41,16 @@ class TestConfigFileMethods(unittest.TestCase):
         self.assertEqual(dict, self.exp_dict)
 
     def test_server_cfg_check(self):
-        handler = config.ConfigFile.get_handler(self.test_file)
-        dict = handler.as_dict_from_file(self.server_test_file)
+        handler = config.ConfigFile.get_handler(self.server_cfg_file)
+        dict = handler.as_dict_from_file(self.server_cfg_file)
+        server_cfg = config.server.ServerConfig()
+
+        # Check that server need resource config file
+        with self.assertRaises(config.MissingRequiredInfo):
+            server_cfg.check_for_required(dict)
+
+        handler = config.ConfigFile.get_handler(self.server_rsrc_file)
+        dict.update(handler.as_dict_from_file(self.server_rsrc_file))
         server_cfg = config.server.ServerConfig()
 
         server_cfg.check_for_required(dict)
@@ -50,7 +61,7 @@ class TestConfigFileMethods(unittest.TestCase):
 
     def test_client_cfg_check(self):
         handler = config.ConfigFile.get_handler(self.test_file)
-        dict = handler.as_dict_from_file(self.client_test_file)
+        dict = handler.as_dict_from_file(self.client_cfg_file)
         client_cfg = config.client.ClientConfig()
 
         client_cfg.check_for_required(dict)

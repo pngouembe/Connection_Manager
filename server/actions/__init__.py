@@ -1,5 +1,8 @@
 
-from com import header, header_list
+from socket import socket
+from queue import Queue
+from com import Header, header_list
+from com.message import Message
 from sdataclasses.uniquedataclass.users import User
 
 action_list = []
@@ -13,23 +16,22 @@ for i in header_list:
     action_list.append(pass_fct)
 
 
-def action(com_header: header):
+def action(com_header: Header):
     global action_list
 
     def wrap(func):
-        action_list[com_header] = func
+        action_list[com_header.value] = func
     return wrap
 
 
-@action(header.INVALID)
-def invalid_handling():
-    pass_fct()
+@action(Header.INVALID)
+def invalid_handling(msg):
+    print(msg)
     return False
 
-
-def handle(user: User, com_header: header, payload: str) -> bool:
+def handle(user: User, sock: socket, msg: Message, request_queue: Queue) -> bool:
     """
     Execute the registered action for the message type received.
     Return True if the handling was successful otherwise return False
     """
-    return action_list[com_header](user, payload)
+    return action_list[msg.header.value](user, sock, msg, request_queue)

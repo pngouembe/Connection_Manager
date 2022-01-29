@@ -1,5 +1,5 @@
 ---
-Resources:
+resources:
   - name: Test_bench1
     info:
       - is_usable: True #is true by default

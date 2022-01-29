@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from com import header, header_list
+from com import Header, header_list
 import re
 from typing import List, Union
 
@@ -16,21 +16,25 @@ class PayloadError(Exception):
 class HeaderError(Exception):
     pass
 
-
-@dataclass
-class Message:
-    header: int
-    payload: str
-
-
-def generate(header, payload) -> str:
-    if header not in header_list:
+def generate(header: Header, payload) -> str:
+    if header.value not in [e.value for e in Header]:
         raise HeaderError("Header {} is not known")
     elif suffix in payload:
         raise PayloadError(
             "Payload cannot contain following elements: {}".format(suffix))
     else:
-        return prefix + str(header) + separator + str(payload) + suffix
+        return prefix + str(header.value) + separator + str(payload) + suffix
+
+@dataclass
+class Message:
+    header: Header
+    payload: str
+
+    def encode(self) -> bytes:
+        return generate(self.header, self.payload).encode()
+
+
+
 
 
 def decode(msg: Union[str, bytes]) -> List[Message]:
@@ -46,20 +50,20 @@ def decode(msg: Union[str, bytes]) -> List[Message]:
         m = re.search(pattern, split_msg)
         if m:
             tmp = m.groupdict()
-            if int(tmp["header"]) not in header_list:
-                tmp["header"] = header.INVALID
-            tmp_msg = Message(int(tmp["header"]), tmp["payload"])
+            if int(tmp["header"]) not in [e.value for e in Header]:
+                tmp["header"] = Header.INVALID.value
+            tmp_msg = Message(Header(int(tmp["header"])), tmp["payload"])
         else:
             tmp_msg = Message(
-                header.INVALID,
+                Header.INVALID,
                 "Received message incomplete, missing header or payload")
         message_list.append(tmp_msg)
     return message_list
 
 
 def ping():
-    return generate(header.PING, 'ping')
+    return generate(Header.PING, 'ping')
 
 
 def pong():
-    return generate(header.PING, 'pong')
+    return generate(Header.PING, 'pong')
