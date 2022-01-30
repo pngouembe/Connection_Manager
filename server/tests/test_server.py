@@ -81,21 +81,26 @@ class TestServerConnectionMethods(TestServerMethods):
 
     def test_send_intro(self):
         self.send_intro()
-        data = self.sock.recv(1024)
-        self.assertEqual(data.decode(), message.ping())
+        rcv_msg = self.recv_msg()
+        self.assertEqual(rcv_msg.header, Header.PING)
+        self.assertEqual(rcv_msg.payload, 'ping')
 
         rcv_msg = self.recv_msg()
         self.assertEqual(rcv_msg.header, Header.END_CONNECTION)
 
     def test_send_pong(self):
         self.send_intro()
-        data = self.sock.recv(1024)
-        self.assertEqual(data.decode(), message.ping())
-        self.send_pong()
+        rcv_msg = self.recv_msg()
+        self.assertEqual(rcv_msg.header, Header.PING)
+        self.assertEqual(rcv_msg.payload, 'ping')
+        self.send_msg(message.Message(Header.PING, 'pong'))
 
         # Sending a incorrect pong to see server reaction
-        data = self.sock.recv(1024)
-        self.assertEqual(data.decode(), message.ping())
+        rcv_msg = self.recv_msg()
+        self.assertEqual(rcv_msg.header, Header.PING)
+        self.assertEqual(rcv_msg.payload, 'ping')
+
+        self.send_msg(message.Message(Header.PING, 'ping'))
         self.sock.send(message.ping().encode())
 
         rcv_msg = self.recv_msg()
