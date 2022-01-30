@@ -1,17 +1,15 @@
 import unittest
 from com import Header, message
 
-from . import TestServerMethods
+from . import TestServerMethods, UserStruct
 
 
 class TestServerResourceMethods(TestServerMethods):
-    def setUp(self) -> None:
-        super().setUp()
+    def user_setUp(self, user_struct: UserStruct = None) -> None:
         self.send_intro()
 
-    def tearDown(self) -> None:
+    def user_tearDown(self, user_struct: UserStruct = None) -> None:
         self.send_end_connection()
-        super().tearDown()
 
     def test_send_request_resource(self):
         msg = message.Message(Header.REQUEST_RESOURCE, "0")
