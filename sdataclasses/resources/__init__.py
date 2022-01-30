@@ -5,7 +5,7 @@ from sdataclasses import SerializableDataclass
 from sdataclasses.uniquedataclass.users import User
 
 
-@dataclass(eq=False)
+@dataclass(unsafe_hash=True)
 class Resource(SerializableDataclass):
     """
     resource dataclass allowing the storage of resource information
@@ -15,8 +15,9 @@ class Resource(SerializableDataclass):
     # list of the required fields
     name: str = field()
     id: int = field()
-    user_list: List[User] = field(default_factory=list, compare=False)
-    is_usable: bool = field(default=True)
+    user_list: List[User] = field(
+        default_factory=list, compare=False, hash=False)
+    is_usable: bool = field(default=True, compare=False, hash=False)
 
     def __post_init__(self) -> None:
         self.is_free = True
