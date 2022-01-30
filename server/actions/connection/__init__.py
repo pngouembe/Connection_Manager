@@ -21,8 +21,10 @@ def end_connection_handling(user: User, sock: socket, msg: Message, request_queu
 @action(Header.INTRODUCE)
 def introduction_handling(user: User, sock: socket, msg: Message, request_queue: Queue) -> bool:
     # User are introduce once and before launching the client handler thread
-    return invalid_handling("Introduction already received")
-
+    # TODO: Investigate why invalid_handling resolve to NoneType
+    #return invalid_handling("Introduction already received")
+    print("Introduction already received")
+    return False
 
 @action(Header.PING)
 def ping_handling(user: User, sock: socket, msg: Message, request_queue: Queue) -> bool:

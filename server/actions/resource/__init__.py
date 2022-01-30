@@ -22,6 +22,7 @@ def timeout_handling(user: User, sock: socket, msg: Message, request_queue: Queu
 
 @action(Header.STATUS)
 def status_handling(user: User, sock: socket, msg: Message, request_queue: Queue) -> bool:
+    # Getting the ids of the resources from the message payload
     ids = set(map(int, re.sub("\D", " ", msg.payload).split()))
     resource_list = [ResourceHandlerThread.resource_list[i] for i in ids]
     msg_to_send = "{}".format(resource_list)
