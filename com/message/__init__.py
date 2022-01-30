@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from com import Header, header_list
 import re
 from typing import List, Union
+from socket import socket
 
 separator = "|||"
 prefix = "$$$"
@@ -34,7 +35,8 @@ class Message:
         return generate(self.header, self.payload).encode()
 
 
-
+def send(sock: socket, msg: Message):
+    sock.send(msg.encode())
 
 
 def decode(msg: Union[str, bytes]) -> List[Message]:
