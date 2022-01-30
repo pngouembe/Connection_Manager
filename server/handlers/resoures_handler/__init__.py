@@ -33,13 +33,31 @@ class ResourceRelease(ResourceRequest):
     pass
 
 
+@dataclass
+class UserData:
+    """Class used to centralize user related elements
+
+    Attributes:
+        user_sock:              Socket used to communicate with the user
+        requested_resources:    List of resource requested by the user
+    """
+    user_sock: socket
+    requested_resources: Set[Resource] = field(default_factory=set)
+
+    def update_resources(self, requested_resources: Set[Resource]):
+        self.requested_resources.update(requested_resources)
+
+
 class ResourceHandlerThread(threading.Thread):
-    """
-    Queue that contains the resource requests
-    """
+    """Thread responsible for the management of the server resources"""
+
+    # Queue that contains the resource requests
     queue = None
+
     resource_list: List[Resource] = []
-    u2r_map: Dict[User, set] = {}
+
+    # Dictionnary that maps user to their userData
+    user_data_map: Dict[User, UserData] = {}
 
     def __init__(self, resource_list: List[Resource], run_event: threading.Event, request_queue: Queue) -> None:
         self.__class__.resource_list = resource_list
@@ -59,17 +77,40 @@ class ResourceHandlerThread(threading.Thread):
         else:
             return True
 
-    def remove_user(self, user: Union[User, Set[User]]) -> bool:
-        if not isinstance(user, set):
-            user = {user}
-        for u in user:
-            u_hash = hash(u)
-            if u_hash in self.u2r_map.keys():
-                for i in self.u2r_map[u_hash]:
-                    self.resource_list[i].remove_user(u)
+    def get_used_resources(self, user: User) -> Set[Resource]:
+        """Return resources requested by a user"""
+        try:
+            return self.user_data_map[user].requested_resources
+        except KeyError:
+            # User never requested any resource
+            return set()
 
-                del self.u2r_map[u_hash]
+    def remove_user(self, users: Union[User, Set[User]]) -> bool:
+        """Remove the users from the resources waiting list"""
+        if not isinstance(users, set):
+            users = {users}
+        for user in users:
+            r_list = self.get_used_resources(user)
+            for r in r_list:
+                r.remove_user(user)
+
+            try:
+                del self.user_data_map[user]
+            except KeyError:
+                # User never requested any resource
+                pass
         return True
+
+    def notify_waiting_users(self, user: User):
+        r_list = self.get_used_resources(user)
+        for r in r_list:
+            if r.user_list[0] == user and len(r.user_list) > 1:
+                next_user = r.user_list[1]
+                next_user_sock = self.user_data_map[next_user].user_sock
+                msg_str = "Access to {}: {} granted".format(r.id, r.name)
+                msg = message.Message(Header.FREE_RESOURCE, msg_str)
+                message.send(next_user_sock, msg)
+
 
     def run(self):
         req: Union[ResourceRequest, ResourceRelease] = None
@@ -85,6 +126,7 @@ class ResourceHandlerThread(threading.Thread):
             u_hash = hash(req.user)
             if req.__class__.__name__ == 'ResourceRelease':
                 print(f"removing {req.user} from resource list")
+                self.notify_waiting_users(req.user)
                 self.remove_user(req.user)
             else:
                 free_resource_found = False
@@ -95,7 +137,8 @@ class ResourceHandlerThread(threading.Thread):
 
                         # add_user must be inside the if as it modifies is_free
                         r.add_user(req.user)
-                        self.u2r_map[u_hash] = {i}
+                        user_data = UserData(req.user_sock, {r})
+                        self.user_data_map[req.user] = user_data
                         msg_header = Header.FREE_RESOURCE
                         msg_str = "Access to {}: {} granted".format(
                             r.id, r.name)
@@ -107,10 +150,11 @@ class ResourceHandlerThread(threading.Thread):
                         break
                     else:
                         r.add_user(req.user)
-                        if u_hash not in self.u2r_map.keys():
-                            self.u2r_map[u_hash] = {i}
-                        else:
-                            self.u2r_map[u_hash].union({i})
+                        try:
+                            self.user_data_map[req.user].update_resources({r})
+                        except KeyError:
+                            user_data = UserData(req.user_sock, {r})
+                            self.user_data_map[req.user] = user_data
 
                 if not free_resource_found:
                     msg_header = Header.WAIT
