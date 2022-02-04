@@ -8,7 +8,7 @@ from sdataclasses.resources import Resource
 from sdataclasses.servers import Server
 from sdataclasses.uniquedataclass import (DuplicateError,
                                           UniqueSerializableDataclass)
-from sdataclasses.uniquedataclass.users import User
+from users import UserInfo
 
 
 class TestSDataclassMethods(unittest.TestCase):
@@ -57,7 +57,7 @@ class TestSDataclassMethods(unittest.TestCase):
     ]
 
     usdc_list = [
-        ("User", User, immutable_valid_dict, invalid_dict)
+        ("UserInfo", UserInfo, immutable_valid_dict, invalid_dict)
     ]
 
     all_list = sdc_list + usdc_list

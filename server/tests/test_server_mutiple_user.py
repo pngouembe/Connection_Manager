@@ -1,19 +1,19 @@
 import unittest
+
 from com import Header, message
+from users import User
 
-import time
-
-from . import TestServerMethods, UserStruct
+from . import TestServerMethods
 
 
 class TestServerMultipleUser(TestServerMethods):
     user_num = 2
 
-    def user_setUp(self, user_struct: UserStruct = None) -> None:
-        self.send_intro(user_struct)
+    def user_setUp(self, user: User = None) -> None:
+        self.send_intro(user)
 
-    def user_tearDown(self, user_struct: UserStruct = None) -> None:
-        self.send_end_connection(user_struct)
+    def user_tearDown(self, user: User = None) -> None:
+        self.send_end_connection(user)
 
     def test_free_resource_notification(self):
         msg = message.Message(Header.REQUEST_RESOURCE, "0")

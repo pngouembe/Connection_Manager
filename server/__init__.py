@@ -1,17 +1,19 @@
-from queue import Queue
-from socket import socket, timeout
-from socket import AF_INET, SOCK_STREAM, SOL_SOCKET, SO_REUSEADDR
 import threading
+from queue import Queue
+from socket import (AF_INET, SO_REUSEADDR, SOCK_STREAM, SOL_SOCKET, socket,
+                    timeout)
+from typing import Dict, List
+
+from com import Header, message
 from sdataclasses import MissingRequiredFields
-from sdataclasses.uniquedataclass import DuplicateError
-from sdataclasses.uniquedataclass.users import User
 from sdataclasses.servers import Server
+from sdataclasses.uniquedataclass import DuplicateError
+from users import User, UserInfo
+
 from .handlers.clients_handler import ClientHandlerThread
 from .handlers.resoures_handler import ResourceHandlerThread
-from com import Header, message
 
 socket_timeout = 1
-
 
 def launch_server(server_config: Server):
     s = socket(AF_INET, SOCK_STREAM)
@@ -29,7 +31,9 @@ def launch_server(server_config: Server):
             exit()
 
     s.listen(10)
+
     threads: list[ClientHandlerThread] = []
+    str_2_user_info: Dict[str, UserInfo] = {}
     run_event = threading.Event()
     run_event.set()
     request_queue = Queue()
@@ -53,20 +57,26 @@ def launch_server(server_config: Server):
             conn.send(msg.encode())
             conn.close()
             continue
-        msg_list: message.Message = message.decode(data)
+        msg_list: List[message.Message] = message.decode(data)
         for msg in msg_list:
             if msg.header == Header.INTRODUCE:
                 try:
-                    user = User.deserialize(msg.payload, address=addr[0], port=addr[1])
+                    user_info = UserInfo.deserialize(str=msg.payload,
+                                                     address=addr[0],
+                                                     port=addr[1])
                 except MissingRequiredFields as e:
                     err_msg = message.generate(Header.END_CONNECTION, e.message)
                     conn.send(err_msg.encode())
                     continue
+                except DuplicateError:
+                    user_info = str_2_user_info[msg.payload]
+                finally:
+                    user = User(info=user_info, socket=conn)
 
-                t = ClientHandlerThread(client_data=user,
-                                        client_socket=conn,
+                t = ClientHandlerThread(user=user,
                                         run_event=run_event,
                                         request_queue=request_queue)
+
                 threads.append(t)
                 t.start()
 

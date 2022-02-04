@@ -1,30 +1,23 @@
 import multiprocessing
-from typing import List, Tuple
+import time
 import unittest
+from os import kill
+from signal import SIGINT
+from socket import AF_INET, SOCK_STREAM, setdefaulttimeout, socket
+from typing import List, Tuple
+
 from com import Header, message
-from socket import socket, AF_INET, SOCK_STREAM, setdefaulttimeout
+from rich import print
 from sdataclasses.resources import Resource
 from sdataclasses.servers import Server
-from sdataclasses.uniquedataclass.users import User
 from server import launch_server, socket_timeout
-from signal import SIGINT
-from os import kill
-from dataclasses import dataclass
-from rich import print
+from users import User, UserInfo
 
-import time
-
-
-@dataclass
-class UserStruct:
-    """Class used to group the user and it's socket"""
-    user: User
-    socket: socket
 
 class TestServerMethods(unittest.TestCase):
     test_num = 1    # Counter used to give different name to users
     user_num = 1    # Number of user per instanciated per test
-    user_list: List[UserStruct] = []
+    user_list: List[User] = []
     resource_list = [Resource("R0", 0)]
     user_name = "Test client"
     server_name = "Server"
@@ -50,70 +43,70 @@ class TestServerMethods(unittest.TestCase):
         print("Server thread ended")
         print("=" * 80, end="\n\n")
 
-    def user_setUp(self, user_struct: UserStruct = None):
+    def user_setUp(self, user: User = None):
         pass
 
     def setUp(self) -> None:
         for _ in range(self.user_num):
             name = self.user_name + " " + str(TestServerMethods.test_num)
             TestServerMethods.test_num += 1
-            user = User(name=name, address=self.addr[0])
+            user_info = UserInfo(name=name, address=self.addr[0])
             sock = socket(AF_INET, SOCK_STREAM)
-            sock.connect(self.addr)
-            user_struct = UserStruct(user, sock)
-            self.user_list.append(user_struct)
+            user = User(info=user_info, socket=sock)
+            user.socket.connect(self.addr)
+            self.user_list.append(user)
 
         print()
         print(self._testMethodName.center(80, "="))
         print(f"User list:")
         print(self.user_list)
 
-        for user_struct in self.user_list:
+        for user in self.user_list:
             # calling user specific setUp
-            self.user_setUp(user_struct)
+            self.user_setUp(user)
 
-    def user_tearDown(self, user_struct: UserStruct = None):
+    def user_tearDown(self, user: User = None):
         pass
 
     def tearDown(self) -> None:
-        for user_struct in self.user_list:
-            self.user_tearDown(user_struct)
-            rcv_msg = self.recv_msg(user_struct)
+        for user in self.user_list:
+            self.user_tearDown(user)
+            rcv_msg = self.recv_msg(user)
             self.assertEqual(rcv_msg.header, Header.END_CONNECTION)
-            user_struct.socket.close()
+            user.socket.close()
 
         self.user_list.clear()
 
         print("=" * 80, end="\n\n")
 
-    def send_msg(self, msg: message.Message, user_struct: UserStruct = None) -> None:
-        if not user_struct:
-            user_struct = self.user_list[0]
-        print(f"{user_struct.user.name} sending : {msg}")
-        user_struct.socket.send(msg.encode())
+    def send_msg(self, msg: message.Message, user: User = None) -> None:
+        if not user:
+            user = self.user_list[0]
+        print(f"{user.info.name} sending : {msg}")
+        user.socket.send(msg.encode())
 
-    def recv_msg(self, user_struct: UserStruct = None) -> message.Message:
-        if not user_struct:
-            user_struct = self.user_list[0]
+    def recv_msg(self, user: User = None) -> message.Message:
+        if not user:
+            user = self.user_list[0]
 
-        msg = message.decode(user_struct.socket.recv(1024))[0]
-        l = len(user_struct.user.name)
-        print(f"{user_struct.user.name} received: {msg}")
+        msg = message.decode(user.socket.recv(1024))[0]
+        l = len(user.info.name)
+        print(f"{user.info.name} received: {msg}")
         return msg
 
-    def send_intro(self, user_struct: UserStruct = None):
-        if not user_struct:
-            user_struct = self.user_list[0]
-        msg = message.Message(Header.INTRODUCE, user_struct.user.serialize())
-        self.send_msg(msg, user_struct)
-        rcv_msg = self.recv_msg(user_struct)
+    def send_intro(self, user: User = None):
+        if not user:
+            user = self.user_list[0]
+        msg = message.Message(Header.INTRODUCE, user.info.serialize())
+        self.send_msg(msg, user)
+        rcv_msg = self.recv_msg(user)
         self.assertEqual(rcv_msg.header, Header.CONNECTION_READY)
 
-    def send_end_connection(self, user_struct: UserStruct = None):
-        if not user_struct:
-            user_struct = self.user_list[0]
+    def send_end_connection(self, user: User = None):
+        if not user:
+            user = self.user_list[0]
         msg = message.Message(Header.END_CONNECTION, "session terminated")
-        self.send_msg(msg, user_struct)
+        self.send_msg(msg, user)
 
-        rcv_msg = self.recv_msg(user_struct)
+        rcv_msg = self.recv_msg(user)
         self.assertEqual(rcv_msg.header, Header.END_CONNECTION)

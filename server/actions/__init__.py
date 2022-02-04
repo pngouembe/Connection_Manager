@@ -1,9 +1,9 @@
 
-from socket import socket
 from queue import Queue
+
 from com import Header, header_list
 from com.message import Message
-from sdataclasses.uniquedataclass.users import User
+from users import User
 
 action_list = []
 
@@ -29,9 +29,10 @@ def invalid_handling(msg):
     print(msg)
     return False
 
-def handle(user: User, sock: socket, msg: Message, request_queue: Queue) -> bool:
+
+def handle(user: User, msg: Message, request_queue: Queue) -> bool:
     """
     Execute the registered action for the message type received.
     Return True if the handling was successful otherwise return False
     """
-    return action_list[msg.header.value](user, sock, msg, request_queue)
+    return action_list[msg.header.value](user, msg, request_queue)

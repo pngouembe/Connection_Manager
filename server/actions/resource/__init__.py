@@ -1,46 +1,45 @@
-from socket import socket
-
 import re
-from actions import action, invalid_handling
 from queue import Queue
+
+from actions import action, invalid_handling
 from com import Header, message
 from com.message import Message
-from sdataclasses.uniquedataclass.users import User
 from server.handlers.resoures_handler import (ResourceHandlerThread,
-                                              ResourceRequest, ResourceRelease)
+                                              ResourceRelease, ResourceRequest)
+from users import User
 
 
 @action(Header.FREE_RESOURCE)
-def free_resource_handling(user: User, sock: socket, msg: Message, request_queue: Queue) -> bool:
+def free_resource_handling(user: User, msg: Message, request_queue: Queue) -> bool:
     return invalid_handling("WAIT messages cannot be sent by clients")
 
 
 @action(Header.TIMEOUT)
-def timeout_handling(user: User, sock: socket, msg: Message, request_queue: Queue) -> bool:
+def timeout_handling(user: User, msg: Message, request_queue: Queue) -> bool:
     pass
 
 
 @action(Header.STATUS)
-def status_handling(user: User, sock: socket, msg: Message, request_queue: Queue) -> bool:
+def status_handling(user: User, msg: Message, request_queue: Queue) -> bool:
     # Getting the ids of the resources from the message payload
     ids = set(map(int, re.sub("\D", " ", msg.payload).split()))
     resource_list = [ResourceHandlerThread.resource_list[i] for i in ids]
     msg_to_send = "{}".format(resource_list)
     resp = message.generate(Header.STATUS, msg_to_send)
-    sock.send(resp.encode())
+    user.socket.send(resp.encode())
     return True
 
 
 @action(Header.WAIT)
-def wait_handling(user: User, sock: socket, msg: Message, request_queue: Queue) -> bool:
+def wait_handling(user: User, msg: Message, request_queue: Queue) -> bool:
     return invalid_handling("WAIT messages cannot be sent by clients")
 
 
 @action(Header.REQUEST_RESOURCE)
-def request_resource_handling(user: User, sock: socket, msg: Message, request_queue: Queue) -> bool:
+def request_resource_handling(user: User, msg: Message, request_queue: Queue) -> bool:
     ids = set(map(int, re.sub("\D", " ", msg.payload).split()))
     try:
-        req = ResourceRequest(resource_ids=ids, user=user, user_sock=sock)
+        req = ResourceRequest(resource_ids=ids, user=user)
     except ValueError as e:
         print(e)
         msg = message.generate(Header.INVALID, e.__str__())
@@ -53,9 +52,9 @@ def request_resource_handling(user: User, sock: socket, msg: Message, request_qu
 
 
 @action(Header.RELEASE_RESOURCE)
-def release_resource_handling(user: User, sock: socket, msg: Message, request_queue: Queue) -> bool:
-    req = ResourceRelease(user=user, user_sock=sock)
+def release_resource_handling(user: User, msg: Message, request_queue: Queue) -> bool:
+    req = ResourceRelease(user=user)
     ResourceHandlerThread.handle_request(req, request_queue)
     msg = Message(Header.RELEASE_RESOURCE, "User resource released")
-    sock.send(msg.encode())
+    user.socket.send(msg.encode())
     return True
