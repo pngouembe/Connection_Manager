@@ -3,9 +3,9 @@ from queue import Queue
 from socket import timeout
 from time import sleep
 
-import actions  # TODO: debug "from server import actions", it's not working
+import server.actions as actions
 from com import Header, message
-from handlers.resoures_handler import ResourceHandlerThread, ResourceRelease
+from server.handlers.resoures_handler import ResourceHandlerThread, ResourceRelease
 from users import User
 
 

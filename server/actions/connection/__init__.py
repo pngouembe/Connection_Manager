@@ -1,6 +1,6 @@
 from queue import Queue
 
-from actions import action
+from server.actions import action, invalid_handling
 from com import Header, message
 from com.message import Message
 from users import User
@@ -20,10 +20,7 @@ def end_connection_handling(user: User, msg: Message, request_queue: Queue) -> b
 @action(Header.INTRODUCE)
 def introduction_handling(user: User, msg: Message, request_queue: Queue) -> bool:
     # User are introduce once and before launching the client handler thread
-    # TODO: Investigate why invalid_handling resolve to NoneType
-    # return invalid_handling("Introduction already received")
-    print("Introduction already received")
-    return False
+    return invalid_handling("Introduction already received")
 
 
 @action(Header.PING)

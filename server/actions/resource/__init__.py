@@ -1,7 +1,7 @@
 import re
 from queue import Queue
 
-from actions import action, invalid_handling
+from server.actions import action, invalid_handling
 from com import Header, message
 from com.message import Message
 from server.handlers.resoures_handler import (ResourceHandlerThread,
