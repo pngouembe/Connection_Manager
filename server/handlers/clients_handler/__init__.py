@@ -10,24 +10,36 @@ from users import User
 
 
 class ClientHandlerThread(threading.Thread):
-    wait_for_recovery = False
-
     def __init__(self, user: User, run_event: threading.Event, request_queue: Queue) -> None:
         self.user = user
         self.run_event = run_event
         self.request_queue = request_queue
+        self.wait_for_recovery = False
         super().__init__(name=user.info.name)
 
     def run(self):
         print("{} thread launched".format(self.name))
-        connection_ended = False
         ready_msg = message.generate(Header.CONNECTION_READY,
                                      "Server ready for communication")
         self.user.socket.send(ready_msg.encode())
         while self.run_event.is_set():
-            if self.user.wait_for_reconnection.is_set():
-                # TODO: handle client reconnection
-                break
+            if self.wait_for_recovery:
+                if self.user.recovery_time == 0:
+                    break
+                else:
+                    print("Waiting {}s for {} to reconnect".format(
+                        self.user.recovery_time, self.user.info.name))
+                    r = self.user.reconnection_event.wait(
+                        self.user.recovery_time)
+                    if r == False:
+                        break
+                    else:
+                        ready_msg = message.generate(Header.CONNECTION_READY,
+                                                     "Successfull reconnection, server ready for communication")
+                        self.user.socket.send(ready_msg.encode())
+                        self.user.reconnection_event.clear()
+                        self.wait_for_recovery = False
+
             try:
                 msg = self.user.socket.recv(1024)
             except timeout:
@@ -38,7 +50,8 @@ class ClientHandlerThread(threading.Thread):
                     ping_handled = False
                     for m in msg_list:
                         if m.header == Header.PING:
-                            r = actions.handle(self.user, m,self.request_queue)
+                            r = actions.handle(
+                                self.user, m, self.request_queue)
                             if r:
                                 ping_handled = True
                             else:
@@ -46,25 +59,26 @@ class ClientHandlerThread(threading.Thread):
                                     Header.END_CONNECTION, "Invalid ping response, ending connection")
                                 self.user.socket.send(err_msg.encode())
                     if not ping_handled:
-                        break
+                        self.wait_for_recovery = True
+                        continue
+
                 except timeout:
                     print("No response from client")
                     err_msg = message.generate(
                         Header.END_CONNECTION, "No response from client")
                     self.user.socket.send(err_msg.encode())
-                    break
+                    self.wait_for_recovery = True
+                    continue
 
             if not msg:
-                break
+                continue
             else:
                 msg_list = message.decode(msg)
                 for m in msg_list:
                     actions.handle(self.user, m, self.request_queue)
                     if m.header == Header.END_CONNECTION:
-                        connection_ended = True
+                        self.wait_for_recovery = True
                         break
-            if connection_ended:
-                break
 
         # Freeing the resources used
         req = ResourceRelease(user=self.user)

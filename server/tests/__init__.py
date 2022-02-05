@@ -3,14 +3,15 @@ import time
 import unittest
 from os import kill
 from signal import SIGINT
-from socket import AF_INET, SOCK_STREAM, setdefaulttimeout, socket
-from typing import List, Tuple
+from socket import AF_INET, SOCK_STREAM, socket
+from typing import List
 
 from com import Header, message
 from rich import print
 from sdataclasses.resources import Resource
 from sdataclasses.servers import Server
-from server import launch_server, socket_timeout
+from server import launch_server
+from server import socket_timeout as server_socket_timeout
 from users import User, UserInfo
 
 
@@ -22,17 +23,20 @@ class TestServerMethods(unittest.TestCase):
     user_name = "Test client"
     server_name = "Server"
     addr = ("127.0.0.1", 65432)
-
+    resource_free_delay = 0
+    socket_timeout = server_socket_timeout
     @classmethod
     def setUpClass(cls):
-        server = Server(cls.addr[0], cls.addr[1], cls.resource_list)
+        server = Server(address=cls.addr[0],
+                        port=cls.addr[1],
+                        resources=cls.resource_list,
+                        resource_free_delay=cls.resource_free_delay)
         cls.p = multiprocessing.Process(target=launch_server,
                                         args=(server,),
                                         name="Server process",
                                         daemon=True)
         cls.p.start()
         cls.server_pid = cls.p.pid
-        setdefaulttimeout(socket_timeout * 2)
         # waiting for server to bind
         time.sleep(1)
 

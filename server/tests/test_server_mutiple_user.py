@@ -1,9 +1,10 @@
+from socket import socket, AF_INET, SOCK_STREAM
 import unittest
 
 from com import Header, message
 from users import User
 
-from . import TestServerMethods
+from . import TestServerMethods, server_socket_timeout
 
 
 class TestServerMultipleUser(TestServerMethods):

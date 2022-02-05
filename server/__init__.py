@@ -13,7 +13,12 @@ from users import User, UserInfo
 from .handlers.clients_handler import ClientHandlerThread
 from .handlers.resoures_handler import ResourceHandlerThread
 
+
+# TODO: Make this value configurable
 socket_timeout = 1
+
+
+#TODO: Use relevent .py files instead of using the __init__.py for the code
 
 def launch_server(server_config: Server):
     s = socket(AF_INET, SOCK_STREAM)
@@ -33,11 +38,12 @@ def launch_server(server_config: Server):
     s.listen(10)
 
     threads: list[ClientHandlerThread] = []
-    str_2_user_info: Dict[str, UserInfo] = {}
+    str_2_user: Dict[str, User] = {}
     run_event = threading.Event()
     run_event.set()
     request_queue = Queue()
-    t = ResourceHandlerThread(server_config.resources, run_event, request_queue)
+    t = ResourceHandlerThread(server_config.resources,
+                              run_event, request_queue)
     threads.append(t)
     t.start()
     while run_event.is_set():
@@ -61,24 +67,30 @@ def launch_server(server_config: Server):
         for msg in msg_list:
             if msg.header == Header.INTRODUCE:
                 try:
-                    user_info = UserInfo.deserialize(str=msg.payload,
-                                                     address=addr[0],
-                                                     port=addr[1])
+                    user_info = UserInfo.deserialize(msg.payload)
                 except MissingRequiredFields as e:
-                    err_msg = message.generate(Header.END_CONNECTION, e.message)
+                    err_msg = message.generate(
+                        Header.END_CONNECTION, e.message)
                     conn.send(err_msg.encode())
                     continue
                 except DuplicateError:
-                    user_info = str_2_user_info[msg.payload]
-                finally:
-                    user = User(info=user_info, socket=conn)
+                    user = str_2_user[msg.payload]
+                    user.socket.close()
+                    user.socket = conn
+                    user.reconnection_event.set()
+                else:
+                    user = User(info=user_info,
+                                socket=conn,
+                                recovery_time=server_config.resource_free_delay)
 
-                t = ClientHandlerThread(user=user,
-                                        run_event=run_event,
-                                        request_queue=request_queue)
+                    str_2_user[msg.payload] = user
 
-                threads.append(t)
-                t.start()
+                    t = ClientHandlerThread(user=user,
+                                            run_event=run_event,
+                                            request_queue=request_queue)
+
+                    threads.append(t)
+                    t.start()
 
     for t in threads:
         if t.is_alive():

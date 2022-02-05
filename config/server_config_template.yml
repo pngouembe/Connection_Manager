@@ -23,6 +23,7 @@ timeout: 0
 comment: I'm just trying the template cfg file
 
 # The time in seconds to wait before re attributing a resource
+# This time allow user to reconnect in case of accidental deconnection
 resource_free_delay: 10
 
 # The number of time the server will check for client reconnexion

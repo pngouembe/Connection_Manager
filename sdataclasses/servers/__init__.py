@@ -15,3 +15,4 @@ class Server(SerializableDataclass):
     address: str = field(hash=True)
     port: int = field(hash=True)
     resources: List[Dict] = field(hash=False, compare=False)
+    resource_free_delay: float = field(default=0, hash=False, compare=False)

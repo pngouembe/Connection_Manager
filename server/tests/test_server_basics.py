@@ -3,12 +3,12 @@ from com import Header, message
 
 import time
 
-from . import TestServerMethods, socket_timeout
+from . import TestServerMethods, server_socket_timeout
 
 
 class TestServerConnectionMethods(TestServerMethods):
     def test_no_introduction(self):
-        time.sleep(socket_timeout + .1)
+        time.sleep(server_socket_timeout + .1)
 
     def test_send_intro(self):
         self.send_intro()

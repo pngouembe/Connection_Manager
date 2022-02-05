@@ -23,11 +23,9 @@ class UserInfo(UniqueSerializableDataclass):
 class User:
     info: UserInfo
     socket: socket  # TODO: field(hash=False) not working, need to investigate
-    wait_for_reconnection: Event = field(default_factory=Event, hash=False)
+    reconnection_event: Event = field(default_factory=Event, hash=False)
     requested_resources: Set = field(default_factory=set, hash=False)
-
-    def __post_init__(self):
-        self.wait_for_reconnection.clear()
+    recovery_time: float = field(default=0, hash=False)
 
     def __repr__(self) -> str:
         return self.info.__repr__()
@@ -35,5 +33,5 @@ class User:
     def __del__(self):
         self.socket.close()
         del self.info
-        del self.wait_for_reconnection
+        del self.reconnection_event
         del self.requested_resources
