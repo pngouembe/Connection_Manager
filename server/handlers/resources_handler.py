@@ -3,8 +3,9 @@ from dataclasses import dataclass
 from queue import Empty, Queue
 from typing import List, Set, Union
 
-from com import Header, message
-from sdataclasses.resources import Resource
+from com import message
+from com.header import Header
+from mydataclasses.resources import Resource
 from users import User
 
 queue_timeout = 1
@@ -28,6 +29,7 @@ class ResourceRequest:
 @dataclass
 class ResourceRelease(ResourceRequest):
     pass
+
 
 class ResourceHandlerThread(threading.Thread):
     """Thread responsible for the management of the server resources"""
@@ -72,7 +74,8 @@ class ResourceHandlerThread(threading.Thread):
             if r.user_list:
                 if r.user_list[0].info == user.info and len(r.user_list) > 1:
                     next_user = r.user_list[1]
-                    msg_str = "Access to {}: {} granted to {}".format(r.id, r.name, next_user.info.name)
+                    msg_str = "Access to {}: {} granted to {}".format(
+                        r.id, r.name, next_user.info.name)
                     msg = message.Message(Header.FREE_RESOURCE, msg_str)
                     message.send(next_user.socket, msg)
 

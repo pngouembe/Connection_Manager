@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from typing import List
 
-from sdataclasses import SerializableDataclass
+from mydataclasses.sdataclasses import SerializableDataclass
 from users import User
 
 

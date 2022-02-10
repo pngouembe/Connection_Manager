@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from com import Header, header_list
+from com.header import Header
 import re
 from typing import List, Union
 from socket import socket
@@ -17,6 +17,7 @@ class PayloadError(Exception):
 class HeaderError(Exception):
     pass
 
+
 def generate(header: Header, payload) -> str:
     if header.value not in [e.value for e in Header]:
         raise HeaderError("Header {} is not known")
@@ -25,6 +26,7 @@ def generate(header: Header, payload) -> str:
             "Payload cannot contain following elements: {}".format(suffix))
     else:
         return prefix + str(header.value) + separator + str(payload) + suffix
+
 
 @dataclass
 class Message:

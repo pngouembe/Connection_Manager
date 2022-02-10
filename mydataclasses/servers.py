@@ -1,7 +1,7 @@
 from typing import Dict, List
 from dataclasses import dataclass, field
 
-from sdataclasses import SerializableDataclass
+from mydataclasses.sdataclasses import SerializableDataclass
 
 
 @dataclass

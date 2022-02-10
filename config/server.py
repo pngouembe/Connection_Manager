@@ -1,7 +1,7 @@
 import argparse
 import os
 from config import Config, __path__, MissingRequiredInfo, ConfigFile
-from sdataclasses.resources import Resource
+from mydataclasses.resources import Resource
 
 
 class ServerConfig(Config):

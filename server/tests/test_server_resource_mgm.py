@@ -1,6 +1,7 @@
 import unittest
 
-from com import Header, message
+from com import message
+from com.header import Header
 from users import User
 
 from . import TestServerMethods

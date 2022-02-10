@@ -2,7 +2,8 @@ from socket import socket, AF_INET, SOCK_STREAM
 from time import sleep, time
 import unittest
 
-from com import Header, message
+from com import message
+from com.header import Header
 from users import User
 
 from . import TestServerMethods, server_socket_timeout

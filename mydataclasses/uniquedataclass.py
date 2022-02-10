@@ -1,6 +1,6 @@
 from dataclasses import FrozenInstanceError, dataclass
 
-from sdataclasses import SerializableDataclass
+from mydataclasses.sdataclasses import SerializableDataclass
 
 
 class DuplicateError(Exception):

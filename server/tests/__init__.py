@@ -6,10 +6,11 @@ from signal import SIGINT
 from socket import AF_INET, SOCK_STREAM, socket
 from typing import List
 
-from com import Header, message
+from com import message
+from com.header import Header
 from rich import print
-from sdataclasses.resources import Resource
-from sdataclasses.servers import Server
+from mydataclasses.resources import Resource
+from mydataclasses.servers import Server
 from server import launch_server
 from server import socket_timeout as server_socket_timeout
 from users import User, UserInfo

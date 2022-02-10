@@ -1,4 +1,4 @@
-from serializers.serializer import Serializer
+from serializers.template import Serializer
 import yaml
 
 

@@ -3,9 +3,10 @@ from queue import Queue
 from socket import timeout
 from time import sleep
 
-import server.actions as actions
-from com import Header, message
-from server.handlers.resoures_handler import ResourceHandlerThread, ResourceRelease
+import server.actions.handle as actions
+from com import message
+from com.header import Header
+from server.handlers.resources_handler import ResourceHandlerThread, ResourceRelease
 from users import User
 
 

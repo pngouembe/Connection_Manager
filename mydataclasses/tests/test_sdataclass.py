@@ -2,12 +2,13 @@ import unittest
 from dataclasses import FrozenInstanceError, asdict
 
 from parameterized import parameterized
-from sdataclasses import (MissingRequiredFields, SerializableDataclass,
-                          UnknownFieldError)
-from sdataclasses.resources import Resource
-from sdataclasses.servers import Server
-from sdataclasses.uniquedataclass import (DuplicateError,
-                                          UniqueSerializableDataclass)
+from mydataclasses.resources import Resource
+from mydataclasses.sdataclasses import (MissingRequiredFields,
+                                        SerializableDataclass,
+                                        UnknownFieldError)
+from mydataclasses.servers import Server
+from mydataclasses.uniquedataclass import (DuplicateError,
+                                           UniqueSerializableDataclass)
 from users import UserInfo
 
 

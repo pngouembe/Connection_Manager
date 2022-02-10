@@ -9,6 +9,7 @@ from abc import abstractmethod
 import os
 import yaml
 
+#TODO: Use relevent .py files instead of using the __init__.py for the code
 
 class UnsupportedFileError(Exception):
     pass

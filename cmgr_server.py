@@ -3,7 +3,7 @@ from config.server import ServerConfig as config
 from rich import print, inspect
 from rich.pretty import pprint
 from server import launch_server
-from sdataclasses.servers import Server
+from mydataclasses.servers import Server
 
 def main():
     cfg_dict = config.as_dict()

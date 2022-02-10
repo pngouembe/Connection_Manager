@@ -1,11 +1,12 @@
 import re
 from queue import Queue
 
-from server.actions import action, invalid_handling
-from com import Header, message
+from server.actions.utils import action, invalid_handling
+from com import message
+from com.header import Header
 from com.message import Message
-from server.handlers.resoures_handler import (ResourceHandlerThread,
-                                              ResourceRelease, ResourceRequest)
+from server.handlers.resources_handler import (ResourceHandlerThread,
+                                               ResourceRelease, ResourceRequest)
 from users import User
 
 

@@ -1,7 +1,8 @@
 from queue import Queue
 
-from server.actions import action, invalid_handling
-from com import Header, message
+from server.actions.utils import action, invalid_handling
+from com import message
+from com.header import Header
 from com.message import Message
 from users import User
 

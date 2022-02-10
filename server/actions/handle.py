@@ -1,0 +1,13 @@
+from queue import Queue
+
+from com.message import Message
+from server.actions.utils import action_list
+from users import User
+
+
+def handle(user: User, msg: Message, request_queue: Queue) -> bool:
+    """
+    Execute the registered action for the message type received.
+    Return True if the handling was successful otherwise return False
+    """
+    return action_list[msg.header.value](user, msg, request_queue)

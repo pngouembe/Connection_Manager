@@ -1,5 +1,6 @@
 import unittest
-from com import Header, message, header_max
+from com import message
+from com.header import Header
 
 
 class TestComMethods(unittest.TestCase):

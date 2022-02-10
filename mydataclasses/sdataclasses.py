@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""mydataclasses module
+"""sdataclasses module
 This is a modified version of the dataclass class adding the following
 features:
 - Creating dataclass from dict
@@ -8,9 +8,7 @@ features:
 - Updating dataclasses from a dict
 
 """
-from dataclasses import (_MISSING_TYPE, Field, asdict, dataclass, field,
-                         make_dataclass)
-from typing import List
+from dataclasses import _MISSING_TYPE, asdict, dataclass, field, make_dataclass
 
 from serializers import SerializerFactory, SerializerType
 
@@ -26,12 +24,6 @@ class UnknownFieldError(Exception):
 
 
 _serializer = SerializerFactory(SerializerType.YAML)
-
-
-class _No_dict:
-    pass
-
-
 
 
 @dataclass
@@ -61,7 +53,8 @@ class DictDataclass:
         cls.req_fields = []
         for k in cls.exp_fields:
             f = cls.__dataclass_fields__[k]
-            inst_check = (isinstance(f.default, _MISSING_TYPE), isinstance(f.default_factory, _MISSING_TYPE))
+            inst_check = (isinstance(f.default, _MISSING_TYPE),
+                          isinstance(f.default_factory, _MISSING_TYPE))
             if inst_check == (True, True):
                 cls.req_fields.append(k)
 
@@ -142,6 +135,7 @@ class DictDataclass:
             # Saving generated class for future use
             cls._classes[input_fields].update({cls.__name__: new_cls})
             return new_cls(**kwargs)
+
 
 @dataclass
 class SerializableDataclass(DictDataclass):

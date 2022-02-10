@@ -4,14 +4,15 @@ from socket import (AF_INET, SO_REUSEADDR, SOCK_STREAM, SOL_SOCKET, socket,
                     timeout)
 from typing import Dict, List
 
-from com import Header, message
-from sdataclasses import MissingRequiredFields
-from sdataclasses.servers import Server
-from sdataclasses.uniquedataclass import DuplicateError
+from com import message
+from com.header import Header
+from mydataclasses.sdataclasses import MissingRequiredFields
+from mydataclasses.servers import Server
+from mydataclasses.uniquedataclass import DuplicateError
 from users import User, UserInfo
 
-from .handlers.clients_handler import ClientHandlerThread
-from .handlers.resoures_handler import ResourceHandlerThread
+from server.handlers.clients_handler import ClientHandlerThread
+from server.handlers.resources_handler import ResourceHandlerThread
 
 
 # TODO: Make this value configurable
