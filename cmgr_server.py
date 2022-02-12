@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
-from config.server import ServerConfig as config
-from rich import print, inspect
+from rich import inspect, print
 from rich.pretty import pprint
-from server import launch_server
+
+from config.server import ServerConfig as config
 from mydataclasses.servers import Server
+from server import launch_server
+
 
 def main():
     cfg_dict = config.as_dict()
