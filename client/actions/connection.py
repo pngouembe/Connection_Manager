@@ -20,5 +20,5 @@ def introduction_handling(user: User, msg: Message, request_queue: Queue) -> boo
 @action(Header.PING)
 def ping_handling(user: User, msg: Message, read_queue: Queue) -> bool:
     user.socket.send(message.pong().encode())
-    log.info(f"Sent: {message.decode(message.pong())[0]}")
+    log.debug(f"Sent: {message.decode(message.pong())[0]}")
     return True
