@@ -16,6 +16,7 @@ class UserInfo(UniqueSerializableDataclass):
     # list of the required fields
     name: str = field(hash=True)
     address: str = field(hash=True)
+    port: int = field(hash=True)
     resource: int = field(default=0, hash=True)
 
 

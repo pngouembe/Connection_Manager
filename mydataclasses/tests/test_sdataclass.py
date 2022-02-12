@@ -44,6 +44,7 @@ class TestSDataclassMethods(unittest.TestCase):
         'name': 'test',
         # User required fields
         'address': '127.0.0.1',
+        'port': 65432,
         'resource': 0,
         # extra_info
         'comment': 'test comment'
