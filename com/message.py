@@ -36,6 +36,8 @@ class Message:
     def encode(self) -> bytes:
         return generate(self.header, self.payload).encode()
 
+    # TODO: Add send method
+
 
 # TODO: Use everywhere
 def send(sock: socket, msg: Message):
@@ -78,3 +80,5 @@ def ping():
 
 def pong():
     return generate(Header.PING, 'pong')
+
+#TODO: Make ping and pong Messages
