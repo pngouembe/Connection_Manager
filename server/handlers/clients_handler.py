@@ -47,6 +47,14 @@ class ClientHandlerThread(threading.Thread):
                 self.user.socket.send(message.ping().encode())
                 try:
                     msg = self.user.socket.recv(1024)
+                except timeout:
+                    print("No response from client")
+                    err_msg = message.generate(
+                        Header.END_CONNECTION, "No response from client")
+                    self.user.socket.send(err_msg.encode())
+                    self.wait_for_recovery = True
+                    continue
+                else:
                     msg_list = message.decode(msg)
                     ping_handled = False
                     for m in msg_list:
@@ -63,19 +71,13 @@ class ClientHandlerThread(threading.Thread):
                         self.wait_for_recovery = True
                         continue
 
-                except timeout:
-                    print("No response from client")
-                    err_msg = message.generate(
-                        Header.END_CONNECTION, "No response from client")
-                    self.user.socket.send(err_msg.encode())
-                    self.wait_for_recovery = True
-                    continue
-
             if not msg:
-                continue
+                print("No response from client")
+                self.wait_for_recovery = True
             else:
                 msg_list = message.decode(msg)
                 for m in msg_list:
+                    print(m)
                     actions.handle(self.user, m, self.request_queue)
                     if m.header == Header.END_CONNECTION:
                         self.wait_for_recovery = True

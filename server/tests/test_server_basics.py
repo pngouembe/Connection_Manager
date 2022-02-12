@@ -37,6 +37,17 @@ class TestServerConnectionMethods(TestServerMethods):
         rcv_msg = self.recv_msg()
         self.assertEqual(rcv_msg.header, Header.END_CONNECTION)
 
+    def test_deconnection(self):
+        self.send_intro()
+        for _ in range(5):
+            rcv_msg = self.recv_msg()
+            self.assertEqual(rcv_msg.header, Header.PING)
+            self.assertEqual(rcv_msg.payload, 'ping')
+            self.send_msg(message.Message(Header.PING, 'pong'))
+
+        rcv_msg = self.recv_msg()
+        self.assertEqual(rcv_msg.header, Header.PING)
+
     def test_send_end_connection(self):
         self.send_intro()
 
