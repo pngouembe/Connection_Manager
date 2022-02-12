@@ -37,6 +37,7 @@ class Message:
         return generate(self.header, self.payload).encode()
 
 
+# TODO: Use everywhere
 def send(sock: socket, msg: Message):
     sock.send(msg.encode())
 
@@ -63,6 +64,12 @@ def decode(msg: Union[str, bytes]) -> List[Message]:
                 "Received message incomplete, missing header or payload")
         message_list.append(tmp_msg)
     return message_list
+
+# TODO: Use everywhere
+
+
+def recv(sock: socket) -> List[Message]:
+    return decode(sock.recv(1024))
 
 
 def ping():
