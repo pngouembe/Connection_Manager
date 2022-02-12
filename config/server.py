@@ -1,6 +1,6 @@
 import argparse
 import os
-from config import Config, __path__, MissingRequiredInfo, ConfigFile
+from config.base import Config, __path__, MissingRequiredInfo, ConfigFile
 from mydataclasses.resources import Resource
 
 

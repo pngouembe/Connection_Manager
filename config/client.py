@@ -1,5 +1,5 @@
 import argparse
-from config import Config, __path__, MissingRequiredInfo
+from config.base import Config, __path__, MissingRequiredInfo
 import os
 
 

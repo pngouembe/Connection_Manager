@@ -1,5 +1,5 @@
 import unittest
-import config
+import config.base
 import config.client
 import config.server
 import config.tests
@@ -17,7 +17,7 @@ class TestConfigFileMethods(unittest.TestCase):
     client_cfg_file = os.path.join(
         config.__path__[0], "client_config_template.yml")
     test_file = os.path.join(config.tests.__path__[0], "test.yml")
-    handle_class = config.YamlConfigFile
+    handle_class = config.base.YamlConfigFile
     exp_dict = {
         "test": "test value",
         "test_list": ["test1", "test2"],
@@ -29,11 +29,11 @@ class TestConfigFileMethods(unittest.TestCase):
 
     def test_yml_file_as_dict(self):
         # test that an error is raised when file extention is not supported
-        with self.assertRaises(config.UnsupportedFileError):
-            config.ConfigFile.get_handler(self.unsupported_file)
+        with self.assertRaises(config.base.UnsupportedFileError):
+            config.base.ConfigFile.get_handler(self.unsupported_file)
 
         # Check that the correct handler instance is generated
-        handler = config.ConfigFile.get_handler(self.test_file)
+        handler = config.base.ConfigFile.get_handler(self.test_file)
         self.assertIsInstance(handler, self.handle_class)
 
         # Check that the correct dict is generated
@@ -41,33 +41,33 @@ class TestConfigFileMethods(unittest.TestCase):
         self.assertEqual(dict, self.exp_dict)
 
     def test_server_cfg_check(self):
-        handler = config.ConfigFile.get_handler(self.server_cfg_file)
+        handler = config.base.ConfigFile.get_handler(self.server_cfg_file)
         dict = handler.as_dict_from_file(self.server_cfg_file)
         server_cfg = config.server.ServerConfig()
 
         # Check that server need resource config file
-        with self.assertRaises(config.MissingRequiredInfo):
+        with self.assertRaises(config.base.MissingRequiredInfo):
             server_cfg.check_for_required(dict)
 
-        handler = config.ConfigFile.get_handler(self.server_rsrc_file)
+        handler = config.base.ConfigFile.get_handler(self.server_rsrc_file)
         dict.update(handler.as_dict_from_file(self.server_rsrc_file))
         server_cfg = config.server.ServerConfig()
 
         server_cfg.check_for_required(dict)
 
         # Check that incomplete server config file loaded raises an error
-        with self.assertRaises(config.MissingRequiredInfo):
+        with self.assertRaises(config.base.MissingRequiredInfo):
             server_cfg.check_for_required(self.exp_dict)
 
     def test_client_cfg_check(self):
-        handler = config.ConfigFile.get_handler(self.test_file)
+        handler = config.base.ConfigFile.get_handler(self.test_file)
         dict = handler.as_dict_from_file(self.client_cfg_file)
         client_cfg = config.client.ClientConfig()
 
         client_cfg.check_for_required(dict)
 
         # Check that incomplete client config file loaded raises an error
-        with self.assertRaises(config.MissingRequiredInfo):
+        with self.assertRaises(config.base.MissingRequiredInfo):
             client_cfg.check_for_required(self.exp_dict)
 
 

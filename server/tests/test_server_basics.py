@@ -4,12 +4,12 @@ from com.header import Header
 
 import time
 
-from . import TestServerMethods, server_socket_timeout
+from server.tests import TestServerMethods
 
 
 class TestServerConnectionMethods(TestServerMethods):
     def test_no_introduction(self):
-        time.sleep(server_socket_timeout + .1)
+        time.sleep(self.socket_timeout + .1)
 
     def test_send_intro(self):
         self.send_intro()

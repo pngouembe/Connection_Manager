@@ -6,12 +6,11 @@ from com import message
 from com.header import Header
 from users import User
 
-from . import TestServerMethods, server_socket_timeout
-
+from server.tests import TestServerMethods
 
 class TestServerUserReconnection(TestServerMethods):
     user_num = 1
-    resource_free_delay = server_socket_timeout + .1
+    resource_free_delay = TestServerMethods.socket_timeout + .1
 
     def user_setUp(self, user: User = None) -> None:
         self.send_intro(user)

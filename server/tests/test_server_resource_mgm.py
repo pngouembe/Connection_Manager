@@ -4,7 +4,7 @@ from com import message
 from com.header import Header
 from users import User
 
-from . import TestServerMethods
+from server.tests import TestServerMethods
 
 
 class TestServerResourceMethods(TestServerMethods):
