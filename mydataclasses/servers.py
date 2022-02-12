@@ -16,3 +16,4 @@ class Server(SerializableDataclass):
     port: int = field(hash=True)
     resources: List[Dict] = field(hash=False, compare=False)
     resource_free_delay: float = field(default=0, hash=False, compare=False)
+    socket_timeout: float = field(default=1, hash=False, compare=False)
