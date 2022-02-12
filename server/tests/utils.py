@@ -8,9 +8,10 @@ from typing import List
 
 from com import message
 from com.header import Header
-from rich import print
 from mydataclasses.resources import Resource
 from mydataclasses.servers import Server
+from mylogger import log
+from rich import print
 from server import launch_server
 from users import User, UserInfo
 
@@ -46,8 +47,8 @@ class TestServerMethods(unittest.TestCase):
     def tearDownClass(cls):
         kill(cls.server_pid, SIGINT)
         cls.p.join()
-        print("Server thread ended")
-        print("=" * 80, end="\n\n")
+        log.info("Server thread ended")
+        log.info("=" * 80, end="\n\n")
 
     def user_setUp(self, user: User = None):
         pass
@@ -64,10 +65,10 @@ class TestServerMethods(unittest.TestCase):
             user.socket.connect(self.addr)
             self.user_list.append(user)
 
-        print()
-        print(self._testMethodName.center(80, "="))
-        print(f"User list:")
-        print(self.user_list)
+        log.info()
+        log.info(self._testMethodName.center(80, "="))
+        log.info(f"User list:")
+        log.info(self.user_list)
 
         for user in self.user_list:
             # calling user specific setUp
@@ -85,12 +86,12 @@ class TestServerMethods(unittest.TestCase):
 
         self.user_list.clear()
 
-        print("=" * 80, end="\n\n")
+        log.info("=" * 80, end="\n\n")
 
     def send_msg(self, msg: message.Message, user: User = None) -> None:
         if not user:
             user = self.user_list[0]
-        print(f"{user.info.name} sending : {msg}")
+        log.info(f"{user.info.name} sending : {msg}")
         user.socket.send(msg.encode())
 
     def recv_msg(self, user: User = None) -> message.Message:
@@ -99,7 +100,7 @@ class TestServerMethods(unittest.TestCase):
 
         msg = message.decode(user.socket.recv(1024))[0]
         l = len(user.info.name)
-        print(f"{user.info.name} received: {msg}")
+        log.info(f"{user.info.name} received: {msg}")
         return msg
 
     def send_intro(self, user: User = None):

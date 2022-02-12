@@ -9,6 +9,7 @@ from com.header import Header
 from mydataclasses.sdataclasses import MissingRequiredFields
 from mydataclasses.servers import Server
 from mydataclasses.uniquedataclass import DuplicateError
+from mylogger import log
 from users import User, UserInfo
 
 from server.handlers.clients_handler import ClientHandlerThread
@@ -24,9 +25,9 @@ def launch_server(server_config: Server):
             s.bind((server_config.address,
                     server_config.port))
             bound = True
-            print("Successfully bound!")
+            log.info("Successfully bound!")
         except OSError:
-            print("Unable to bind")
+            log.info("Unable to bind")
             s.close()
             exit()
 
@@ -46,14 +47,14 @@ def launch_server(server_config: Server):
             conn, addr = s.accept()
             conn.settimeout(server_config.socket_timeout)
         except KeyboardInterrupt:
-            print("Ending Server Thread")
+            log.info("Ending Server Thread")
             run_event.clear()
             break
         try:
             data = conn.recv(1024)
         except timeout as e:
             msg_str = "Client introducing message not received, closing socket"
-            print(msg_str)
+            log.info(msg_str)
             msg = message.generate(Header.END_CONNECTION, msg_str)
             conn.send(msg.encode())
             conn.close()
@@ -89,6 +90,6 @@ def launch_server(server_config: Server):
 
     for t in threads:
         if t.is_alive():
-            print("Waiting for {} Thread to end".format(t.name))
+            log.info("Waiting for {} Thread to end".format(t.name))
             t.join()
     s.close()

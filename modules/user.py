@@ -1,11 +1,15 @@
 #!/usr/bin/env python3
 
 import threading
-from json import loads, dumps
+from datetime import datetime
+from json import dumps, loads
 from typing import Any
+
+from mylogger import log
+
 from display import Logger
 from resource_mgr import Resource, ResourceMgr
-from datetime import datetime
+
 
 class User:
     __user_list = []
@@ -203,11 +207,11 @@ class User:
 
 if __name__ == "__main__":
     u1 = User()
-    print("User count : {}".format(User.get_user_count()))
+    log.info("User count : {}".format(User.get_user_count()))
     u2 = User({"name":"Pierre"})
-    print("User count : {}".format(User.get_user_count()))
+    log.info("User count : {}".format(User.get_user_count()))
     u3 = User({"name":"Paul", "comment":"Jacques est pas loin"})
-    print("User count : {}".format(User.get_user_count()))
+    log.info("User count : {}".format(User.get_user_count()))
 
     for key, value in User.get_user_list().items():
-        print(key, value.__user_info, sep=' :\n' )
+        log.info(key, value.__user_info, sep=' :\n')

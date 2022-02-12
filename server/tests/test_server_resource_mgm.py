@@ -2,9 +2,9 @@ import unittest
 
 from com import message
 from com.header import Header
-from users import User
-
+from mylogger import log
 from server.tests import TestServerMethods
+from users import User
 
 
 class TestServerResourceMethods(TestServerMethods):
@@ -32,7 +32,7 @@ class TestServerResourceMethods(TestServerMethods):
         self.send_msg(msg)
 
         rcv_msg = self.recv_msg()
-        print(rcv_msg)
+        log.info(rcv_msg)
         self.assertEqual(rcv_msg.header, Header.STATUS)
 
         # Requesting resource

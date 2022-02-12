@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
 
+import re
 from enum import Enum, unique
 from typing import Any, Tuple
-import re
+
+from mylogger import log
+
 
 @unique
 class ComHeaders(Enum):
@@ -41,11 +44,10 @@ class ComProtocole:
 
 if __name__ == "__main__":
     msg = ComProtocole.generate_msg(ComHeaders.END_CONNECTION)
-    print(msg)
+    log.info(msg)
     dec_msg = ComProtocole.decode_msg(msg)
-    print(dec_msg, end="\n\n")
+    log.info(dec_msg, end="\n\n")
     msg2 = ComProtocole.generate_msg(ComHeaders.INTRODUCE, "coucou c'est moi")
-    print(msg2)
+    log.info(msg2)
     dec_msg2 = ComProtocole.decode_msg(msg2)
-    print(dec_msg2, end="\n\n")
-
+    log.info(dec_msg2, end="\n\n")

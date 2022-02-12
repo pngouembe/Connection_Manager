@@ -1,4 +1,5 @@
 from com.header import Header
+from mylogger import log
 
 action_list = []
 
@@ -21,5 +22,5 @@ def action(com_header: Header):
 
 @action(Header.INVALID)
 def invalid_handling(msg):
-    print(msg)
+    log.info(msg)
     return False

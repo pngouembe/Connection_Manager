@@ -1,14 +1,16 @@
 import threading
+from queue import Queue
+
+import client.actions.handle as actions
 from com import message
 from com.header import Header
+from mylogger import log
 from users import User
-from queue import Queue
-import client.actions.handle as actions
 
 
 class ServerNotReadyError(Exception):
     def __init__(self, *args: object) -> None:
-        print("Server not ready, unable to communicate")
+        log.info("Server not ready, unable to communicate")
         super().__init__(*args)
 
 # TODO: Make common handler thread class
@@ -23,7 +25,7 @@ class ComThread(threading.Thread):
         super().__init__(name=user.info.name)
 
     def run(self) -> None:
-        print("{} thread launched".format(self.name))
+        log.info("{} thread launched".format(self.name))
         msg = message.Message(Header.INTRODUCE, self.user.info.serialize())
         message.send(self.user.socket, msg)
         msg_list = message.recv(self.user.socket)
@@ -34,7 +36,6 @@ class ComThread(threading.Thread):
             msg = self.user.socket.recv(1024)
             msg_list = message.decode(msg)
             for m in msg_list:
-                print(f'Recv: {m}')
                 actions.handle(self.user, m, self.read_queue)
 
         msg = message.Message(Header.END_CONNECTION, "Session terminated")

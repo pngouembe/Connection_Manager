@@ -1,18 +1,20 @@
 import re
 from queue import Queue
 
-from server.actions.utils import action, invalid_handling
 from com import message
 from com.header import Header
 from com.message import Message
+from mylogger import log
+from server.actions.utils import action, invalid_handling
 from server.handlers.resources_handler import (ResourceHandlerThread,
-                                               ResourceRelease, ResourceRequest)
+                                               ResourceRelease,
+                                               ResourceRequest)
 from users import User
 
 
 @action(Header.FREE_RESOURCE)
 def free_resource_handling(user: User, msg: Message, request_queue: Queue) -> bool:
-    return invalid_handling("WAIT messages cannot be sent by clients")
+    return invalid_handling("FREE_RESOURCE messages cannot be sent by clients")
 
 
 @action(Header.TIMEOUT)
@@ -42,7 +44,7 @@ def request_resource_handling(user: User, msg: Message, request_queue: Queue) ->
     try:
         req = ResourceRequest(resource_ids=ids, user=user)
     except ValueError as e:
-        print(e)
+        log.info(e)
         msg = message.generate(Header.INVALID, e.__str__())
         return False
 
