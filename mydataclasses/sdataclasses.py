@@ -14,6 +14,9 @@ from serializers import SerializerFactory, SerializerType
 
 
 class MissingRequiredFields(Exception):
+    """Exception raised when incomplete configuration is given.
+    Pass the missing fields in argument of the exception
+    """
     def __init__(self, *args) -> None:
         self.message = "Missing the following fields: {}".format(*args)
         super().__init__(self.message)
