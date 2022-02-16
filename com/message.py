@@ -1,8 +1,10 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from com.header import Header
+from datetime import datetime
 import re
 from typing import List, Union
 from socket import socket
+from rich.pretty import Pretty
 
 separator = "|||"
 prefix = "$$$"
@@ -21,7 +23,7 @@ class HeaderError(Exception):
 def generate(header: Header, payload) -> str:
     if header.value not in [e.value for e in Header]:
         raise HeaderError("Header {} is not known")
-    elif suffix in payload:
+    elif suffix in str(payload):
         raise PayloadError(
             "Payload cannot contain following elements: {}".format(suffix))
     else:
@@ -32,6 +34,21 @@ def generate(header: Header, payload) -> str:
 class Message:
     header: Header
     payload: str
+    timestamp: str = field(default="")
+
+    def __rich__(self):
+        return Pretty(self)
+
+    def __post_init__(self):
+        self.timestamp = datetime.now().strftime("%H:%M:%S")
+
+    # def __repr__(self) -> str:
+    #     return f"[{self.timestamp}] {self.header.name} - {self.payload}"
+
+    def __rich_repr__(self):
+        yield self.timestamp
+        yield "header", self.header.name
+        yield "payload", self.payload
 
     def encode(self) -> bytes:
         return generate(self.header, self.payload).encode()

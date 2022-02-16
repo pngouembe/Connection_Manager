@@ -1,13 +1,14 @@
 import logging
 
 from rich.logging import RichHandler
+from myconsole import log_console, log_stream
 
 FORMAT = "%(message)s"
 logging.basicConfig(
     level="NOTSET",
     format=FORMAT,
     datefmt="[%X]",
-    handlers=[RichHandler(rich_tracebacks=True)]
+    handlers=[RichHandler(console=log_console, show_path=False)]
 )
 
 log = logging.getLogger()

@@ -6,6 +6,11 @@ from config.server import ServerConfig as config
 from mydataclasses.servers import Server
 from server import launch_server
 
+from mylogger import log
+from rich.logging import RichHandler
+
+log.handlers = [RichHandler(show_path=False)]
+
 
 def main():
     cfg_dict = config.as_dict()

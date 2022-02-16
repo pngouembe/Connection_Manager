@@ -73,6 +73,7 @@ class Config():
             raise MissingRequiredInfo(
                 "The following infos are missing from your config file {}".format(missing_info))
 
+    # TODO: Remove cfg files paths from config
     @classmethod
     def as_dict(cls) -> dict:
         if not cls.parser:
