@@ -11,4 +11,4 @@ logging.basicConfig(
     handlers=[RichHandler(console=log_console, show_path=False)]
 )
 
-log = logging.getLogger()
+clog = logging.getLogger()

@@ -6,10 +6,10 @@ from config.server import ServerConfig as config
 from mydataclasses.servers import Server
 from server import launch_server
 
-from mylogger import log
+from mylogger import clog
 from rich.logging import RichHandler
 
-log.handlers = [RichHandler(show_path=False)]
+clog.handlers = [RichHandler(show_path=False)]
 
 
 def main():

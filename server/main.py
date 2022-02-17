@@ -9,7 +9,7 @@ from com.header import Header
 from mydataclasses.sdataclasses import MissingRequiredFields
 from mydataclasses.servers import Server
 from mydataclasses.uniquedataclass import DuplicateError
-from mylogger import log
+from mylogger import clog
 from users import User, UserInfo
 
 from server.handlers.clients_handler import ClientHandlerThread
@@ -25,9 +25,9 @@ def launch_server(server_config: Server):
             s.bind((server_config.address,
                     server_config.port))
             bound = True
-            log.info("Successfully bound!")
+            clog.info("Successfully bound!")
         except OSError:
-            log.info("Unable to bind")
+            clog.info("Unable to bind")
             s.close()
             exit()
 
@@ -47,14 +47,14 @@ def launch_server(server_config: Server):
             conn, addr = s.accept()
             conn.settimeout(server_config.socket_timeout)
         except KeyboardInterrupt:
-            log.info("Ending Server Thread")
+            clog.info("Ending Server Thread")
             run_event.clear()
             break
         try:
             data = conn.recv(1024)
         except timeout as e:
             msg_str = "Client introducing message not received, closing socket"
-            log.info(msg_str)
+            clog.info(msg_str)
             msg = message.generate(Header.END_CONNECTION, msg_str)
             conn.send(msg.encode())
             conn.close()
@@ -90,6 +90,6 @@ def launch_server(server_config: Server):
 
     for t in threads:
         if t.is_alive():
-            log.info("Waiting for {} Thread to end".format(t.name))
+            clog.info("Waiting for {} Thread to end".format(t.name))
             t.join()
     s.close()

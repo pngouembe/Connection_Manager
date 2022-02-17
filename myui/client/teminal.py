@@ -7,7 +7,7 @@ from queue import Empty, Queue
 from com import message
 from com.header import Header
 from myconsole import console
-from mylogger import log, log_stream
+from mylogger import log_stream
 from myui.terminal import TerminalDashboard
 from myui.utils import RichLogLines
 from rich.console import Console, Group

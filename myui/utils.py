@@ -45,10 +45,10 @@ class RichLogLine:
 
 class RichLogLines:
     def __init__(self, log_lines: list) -> None:
-        self.log_lines = [RichLogLine(log) for log in log_lines]
+        self.log_lines = [RichLogLine(log_line) for log_line in log_lines]
 
     def __rich__(self):
-        return "\n".join([log.__rich__() for log in self.log_lines])
+        return "\n".join([log_line.__rich__() for log_line in self.log_lines])
 
     def __repr__(self) -> str:
-        return "\n".join([log.__repr__() for log in self.log_lines])
+        return "\n".join([log_line.__repr__() for log_line in self.log_lines])

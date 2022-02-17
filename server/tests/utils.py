@@ -10,10 +10,19 @@ from com import message
 from com.header import Header
 from mydataclasses.resources import Resource
 from mydataclasses.servers import Server
-from mylogger import log
+from mylogger import clog
+from rich.logging import RichHandler
+from rich.rule import Rule
+from rich.panel import Panel
+from rich.pretty import Pretty
+from rich.console import Group, Console
 from rich import print
 from server import launch_server
 from users import User, UserInfo
+
+console = Console()
+clog.handlers = [RichHandler(
+    console=console, show_path=False, log_time_format='[%X]', show_level=False)]
 
 
 class TestServerMethods(unittest.TestCase):
@@ -47,8 +56,8 @@ class TestServerMethods(unittest.TestCase):
     def tearDownClass(cls):
         kill(cls.server_pid, SIGINT)
         cls.p.join()
-        log.info("Server thread ended")
-        log.info("=" * 80, end="\n\n")
+        clog.info("Server thread ended")
+        console.print(Rule())
 
     def user_setUp(self, user: User = None):
         pass
@@ -64,12 +73,12 @@ class TestServerMethods(unittest.TestCase):
             user = User(info=user_info, socket=sock)
             user.socket.connect(self.addr)
             self.user_list.append(user)
-
-        log.info()
-        log.info(self._testMethodName.center(80, "="))
-        log.info(f"User list:")
-        log.info(self.user_list)
-
+        console.print()
+        console.print(Rule(self._testMethodName))
+        group = Group()
+        for user in self.user_list:
+            group.renderables.append(Pretty(user))
+        console.print(Panel(group, title="User list"))
         for user in self.user_list:
             # calling user specific setUp
             self.user_setUp(user)
@@ -86,12 +95,12 @@ class TestServerMethods(unittest.TestCase):
 
         self.user_list.clear()
 
-        log.info("=" * 80, end="\n\n")
+        console.print(Rule(characters="="))
 
     def send_msg(self, msg: message.Message, user: User = None) -> None:
         if not user:
             user = self.user_list[0]
-        log.info(f"{user.info.name} sending : {msg}")
+        clog.info(f"{user.info.name} sending : {msg}")
         user.socket.send(msg.encode())
 
     def recv_msg(self, user: User = None) -> message.Message:
@@ -100,7 +109,7 @@ class TestServerMethods(unittest.TestCase):
 
         msg = message.decode(user.socket.recv(1024))[0]
         l = len(user.info.name)
-        log.info(f"{user.info.name} received: {msg}")
+        clog.info(f"{user.info.name} received: {msg}")
         return msg
 
     def send_intro(self, user: User = None):

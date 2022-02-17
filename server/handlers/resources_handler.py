@@ -6,7 +6,7 @@ from typing import List, Set, Union
 from com import message
 from com.header import Header
 from mydataclasses.resources import Resource
-from mylogger import log
+from mylogger import clog
 from users import User
 
 queue_timeout = 1
@@ -94,7 +94,7 @@ class ResourceHandlerThread(threading.Thread):
                 resources = self.resource_list
 
             if req.__class__.__name__ == 'ResourceRelease':
-                log.info(f"removing {req.user} from resource list")
+                clog.info(f"removing {req.user} from resource list")
                 self.notify_waiting_users(req.user)
                 self.remove_user(req.user)
             else:

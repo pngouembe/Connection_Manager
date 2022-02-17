@@ -3,7 +3,7 @@ from queue import Queue
 from com import message
 from com.header import Header
 from com.message import Message
-from mylogger import log
+from mylogger import clog
 from server.actions.utils import action, invalid_handling
 from users import User
 
@@ -30,5 +30,5 @@ def ping_handling(user: User, msg: Message, request_queue: Queue) -> bool:
     if 'pong' == msg.payload:
         return True
     else:
-        log.info("Client response to ping is incorrect")
+        clog.info("Client response to ping is incorrect")
         return False

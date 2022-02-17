@@ -2,7 +2,7 @@ import unittest
 
 from com import message
 from com.header import Header
-from mylogger import log
+from mylogger import clog
 from server.tests import TestServerMethods
 from users import User
 
@@ -32,7 +32,7 @@ class TestServerResourceMethods(TestServerMethods):
         self.send_msg(msg)
 
         rcv_msg = self.recv_msg()
-        log.info(rcv_msg)
+        clog.info(rcv_msg)
         self.assertEqual(rcv_msg.header, Header.STATUS)
 
         # Requesting resource

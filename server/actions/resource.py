@@ -4,7 +4,7 @@ from queue import Queue
 from com import message
 from com.header import Header
 from com.message import Message
-from mylogger import log
+from mylogger import clog
 from server.actions.utils import action, invalid_handling
 from server.handlers.resources_handler import (ResourceHandlerThread,
                                                ResourceRelease,
@@ -44,7 +44,7 @@ def request_resource_handling(user: User, msg: Message, request_queue: Queue) ->
     try:
         req = ResourceRequest(resource_ids=ids, user=user)
     except ValueError as e:
-        log.info(e)
+        clog.error(e)
         msg = message.generate(Header.INVALID, e.__str__())
         return False
 

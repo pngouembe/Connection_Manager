@@ -4,13 +4,13 @@ from queue import Queue
 import client.actions.handle as actions
 from com import message
 from com.header import Header
-from mylogger import log
+from mylogger import clog
 from users import User
 
 
 class ServerNotReadyError(Exception):
     def __init__(self, *args: object) -> None:
-        log.info("Server not ready, unable to communicate")
+        clog.info("Server not ready, unable to communicate")
         super().__init__(*args)
 
 # TODO: Make common handler thread class
@@ -25,7 +25,7 @@ class ComThread(threading.Thread):
         super().__init__(name=user.info.name)
 
     def run(self) -> None:
-        log.info("{} thread launched".format(self.name))
+        clog.info("{} thread launched".format(self.name))
         msg = message.Message(Header.INTRODUCE, self.user.info.serialize())
         message.send(self.user.socket, msg)
         msg_list = message.recv(self.user.socket)

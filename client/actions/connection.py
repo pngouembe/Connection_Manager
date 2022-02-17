@@ -4,7 +4,7 @@ from client.actions.utils import action, invalid_handling
 from com import message
 from com.header import Header
 from com.message import Message
-from mylogger import log
+from mylogger import clog
 from users import User
 
 
@@ -20,5 +20,5 @@ def introduction_handling(user: User, msg: Message, request_queue: Queue) -> boo
 @action(Header.PING)
 def ping_handling(user: User, msg: Message, read_queue: Queue) -> bool:
     user.socket.send(message.pong().encode())
-    log.debug(f"Sent: {message.decode(message.pong())[0]}")
+    clog.debug(f"Sent: {message.decode(message.pong())[0]}")
     return True

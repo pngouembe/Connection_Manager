@@ -6,7 +6,7 @@ from time import sleep
 import server.actions.handle as actions
 from com import message
 from com.header import Header
-from mylogger import log
+from mylogger import clog
 from server.handlers.resources_handler import (ResourceHandlerThread,
                                                ResourceRelease)
 from users import User
@@ -21,7 +21,7 @@ class ClientHandlerThread(threading.Thread):
         super().__init__(name=user.info.name)
 
     def run(self):
-        log.info("{} thread launched".format(self.name))
+        clog.info("{} thread launched".format(self.name))
         ready_msg = message.generate(Header.CONNECTION_READY,
                                      "Server ready for communication")
         self.user.socket.send(ready_msg.encode())
@@ -30,7 +30,7 @@ class ClientHandlerThread(threading.Thread):
                 if self.user.recovery_time == 0:
                     break
                 else:
-                    log.info("Waiting {}s for {} to reconnect".format(
+                    clog.info("Waiting {}s for {} to reconnect".format(
                         self.user.recovery_time, self.user.info.name))
                     r = self.user.reconnection_event.wait(
                         self.user.recovery_time)
@@ -50,7 +50,7 @@ class ClientHandlerThread(threading.Thread):
                 try:
                     msg = self.user.socket.recv(1024)
                 except timeout:
-                    log.info("No response from client")
+                    clog.info("No response from client")
                     err_msg = message.generate(
                         Header.END_CONNECTION, "No response from client")
                     self.user.socket.send(err_msg.encode())
@@ -74,12 +74,12 @@ class ClientHandlerThread(threading.Thread):
                         continue
 
             if not msg:
-                log.info("No response from client")
+                clog.info("No response from client")
                 self.wait_for_recovery = True
             else:
                 msg_list = message.decode(msg)
                 for m in msg_list:
-                    log.info(m)
+                    clog.info(m)
                     actions.handle(self.user, m, self.request_queue)
                     if m.header == Header.END_CONNECTION:
                         self.wait_for_recovery = True
@@ -102,4 +102,4 @@ class ClientHandlerThread(threading.Thread):
         self.user.socket.close()
         self.user.info.__del__()
         del self.user
-        log.info("Ending {} thread".format(self.name))
+        clog.info("Ending {} thread".format(self.name))
