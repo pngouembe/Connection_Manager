@@ -1,13 +1,14 @@
 import threading
 from dataclasses import dataclass
 from queue import Empty, Queue
-from typing import List, Set, Union
+from typing import List, Set, Union, Dict
 
 from com import message
 from com.header import Header
 from mydataclasses.resources import Resource
 from mylogger import clog
 from users import User
+from users.user import UserInfo
 
 queue_timeout = 1
 request_timout = 1
@@ -39,6 +40,8 @@ class ResourceHandlerThread(threading.Thread):
     queue = None
 
     resource_list: List[Resource] = []
+    # TODO:Check if it could be a set by using UserInfo __hash__() as User __hash__()
+    user_dict: Dict[UserInfo, User] = {}
 
     def __init__(self, resource_list: List[Resource], run_event: threading.Event, request_queue: Queue) -> None:
         self.__class__.resource_list = resource_list
@@ -49,9 +52,7 @@ class ResourceHandlerThread(threading.Thread):
     @staticmethod
     def handle_request(request: Union[ResourceRequest, ResourceRelease], queue: Queue, blocks: bool = True) -> bool:
         if blocks:
-            e = threading.Event()
-            e.clear()
-            request.handled = e
+            request.handled = threading.Event()
         queue.put(request)
         if blocks:
             return request.handled.wait(timeout=request_timout)
@@ -73,8 +74,8 @@ class ResourceHandlerThread(threading.Thread):
         r_list: Set[Resource] = user.requested_resources
         for r in r_list:
             if r.user_list:
-                if r.user_list[0].info == user.info and len(r.user_list) > 1:
-                    next_user = r.user_list[1]
+                if r.user_list[0] == user.info and len(r.user_list) > 1:
+                    next_user = self.user_dict[r.user_list[1]]
                     msg_str = "Access to {}: {} granted to {}".format(
                         r.id, r.name, next_user.info.name)
                     msg = message.Message(Header.FREE_RESOURCE, msg_str)
@@ -93,10 +94,15 @@ class ResourceHandlerThread(threading.Thread):
             else:
                 resources = self.resource_list
 
+            if req.user.info not in self.user_dict.keys():
+                self.user_dict[req.user.info] = req.user
+
             if req.__class__.__name__ == 'ResourceRelease':
                 clog.info(f"removing {req.user} from resource list")
                 self.notify_waiting_users(req.user)
                 self.remove_user(req.user)
+                del self.user_dict[req.user.info]
+
             else:
                 free_resource_found = False
                 for r in resources:

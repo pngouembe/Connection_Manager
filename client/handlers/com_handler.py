@@ -6,6 +6,7 @@ from com import message
 from com.header import Header
 from mylogger import clog
 from users import User
+import time
 
 
 class ServerNotReadyError(Exception):
@@ -22,6 +23,9 @@ class ComThread(threading.Thread):
         self.user = user
         self.run_event = run_event
         self.read_queue = read_queue
+        # TODO: make refresh interval configurable
+        # Time in sec between two automatic status request
+        self.refresh_interval = 3
         super().__init__(name=user.info.name)
 
     def run(self) -> None:
@@ -32,11 +36,21 @@ class ComThread(threading.Thread):
         if msg_list[0].header != Header.CONNECTION_READY:
             raise ServerNotReadyError
 
+        msg = message.Message(Header.REQUEST_RESOURCE,
+                              self.user.info.resource)
+        message.send(self.user.socket, msg)
+
+        start_time = cur_time = time.time()
         while self.run_event.is_set():
             msg = self.user.socket.recv(1024)
             msg_list = message.decode(msg)
             for m in msg_list:
                 actions.handle(self.user, m, self.read_queue)
+            if cur_time - start_time > self.refresh_interval:
+                msg = message.Message(Header.STATUS, self.user.info.resource)
+                message.send(self.user.socket, msg)
+                start_time = time.time()
+            cur_time = time.time()
 
         msg = message.Message(Header.END_CONNECTION, "Session terminated")
         message.send(self.user.socket, msg)

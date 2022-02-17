@@ -22,14 +22,15 @@ def timeout_handling(user: User, msg: Message, request_queue: Queue) -> bool:
     pass
 
 
+# TODO: Add support for querying status of all the resources
 @action(Header.STATUS)
 def status_handling(user: User, msg: Message, request_queue: Queue) -> bool:
     # Getting the ids of the resources from the message payload
     ids = set(map(int, re.sub("\D", " ", msg.payload).split()))
     resource_list = [ResourceHandlerThread.resource_list[i] for i in ids]
-    msg_to_send = "{}".format(resource_list)
-    resp = message.generate(Header.STATUS, msg_to_send)
-    user.socket.send(resp.encode())
+    for r in resource_list:
+        resp = message.generate(Header.STATUS, r.serialize())
+        user.socket.send(resp.encode())
     return True
 
 
