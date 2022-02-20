@@ -106,7 +106,7 @@ class ResourceHandlerThread(threading.Thread):
             else:
                 free_resource_found = False
                 for r in resources:
-                    if r.is_free:
+                    if r.is_free or r.user_list[0] == req.user.info:
                         # remove user from all waiting list
                         self.remove_user(req.user)
 

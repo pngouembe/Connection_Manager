@@ -109,8 +109,9 @@ class TestSDataclassMethods(unittest.TestCase):
         t: SerializableDataclass = cls(**valid_dict)
         with self.assertRaises(FrozenInstanceError):
             t.name = "Trying to set attribute"
-        with self.assertRaises(DuplicateError):
-            cls(**valid_dict)
+        for _ in range(5):
+            with self.assertRaises(DuplicateError):
+                cls(**valid_dict)
         del t
 
     @parameterized.expand(all_list)

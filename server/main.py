@@ -61,6 +61,7 @@ def launch_server(server_config: Server):
             continue
         msg_list: List[message.Message] = message.decode(data)
         for msg in msg_list:
+            clog.info(msg)
             if msg.header == Header.INTRODUCE:
                 try:
                     user_info = UserInfo.deserialize(msg.payload)
@@ -70,10 +71,19 @@ def launch_server(server_config: Server):
                     conn.send(err_msg.encode())
                     continue
                 except DuplicateError:
+                    """
+                    TODO: debug use following use case:
+                    User connects once, use try to connect
+                    """
                     user = str_2_user[msg.payload]
-                    user.socket.close()
-                    user.socket = conn
-                    user.reconnection_event.set()
+                    if user.waiting_for_reconnection:
+                        user.socket.close()
+                        user.socket = conn
+                        user.reconnection_event.set()
+                    else:
+                        err_msg = message.generate(
+                            Header.END_CONNECTION, "User already connected")
+                        conn.send(err_msg.encode())
                 else:
                     user = User(info=user_info,
                                 socket=conn,
@@ -90,6 +100,7 @@ def launch_server(server_config: Server):
 
     for t in threads:
         if t.is_alive():
+            # TODO: Send end connection to alive clients
             clog.info("Waiting for {} Thread to end".format(t.name))
             t.join()
     s.close()

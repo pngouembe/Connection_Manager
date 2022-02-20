@@ -4,6 +4,7 @@ from queue import Queue
 import client.actions.handle as actions
 from com import message
 from com.header import Header
+from mydataclasses.uniquedataclass import DuplicateError
 from mylogger import clog
 from users import User
 import time
@@ -33,8 +34,11 @@ class ComThread(threading.Thread):
         msg = message.Message(Header.INTRODUCE, self.user.info.serialize())
         message.send(self.user.socket, msg)
         msg_list = message.recv(self.user.socket)
-        if msg_list[0].header != Header.CONNECTION_READY:
-            raise ServerNotReadyError
+        if msg_list[0].header == Header.END_CONNECTION:
+            clog.error(msg_list[0])
+            raise DuplicateError("Client already running")
+        elif msg_list[0].header != Header.CONNECTION_READY:
+            raise ServerNotReadyError(msg_list[0])
 
         msg = message.Message(Header.REQUEST_RESOURCE,
                               self.user.info.resource)

@@ -17,7 +17,6 @@ class ClientHandlerThread(threading.Thread):
         self.user = user
         self.run_event = run_event
         self.request_queue = request_queue
-        self.wait_for_recovery = False
         super().__init__(name=user.info.name)
 
     def run(self):
@@ -26,7 +25,7 @@ class ClientHandlerThread(threading.Thread):
                                      "Server ready for communication")
         self.user.socket.send(ready_msg.encode())
         while self.run_event.is_set():
-            if self.wait_for_recovery:
+            if self.user.waiting_for_reconnection:
                 if self.user.recovery_time == 0:
                     break
                 else:
@@ -41,7 +40,7 @@ class ClientHandlerThread(threading.Thread):
                                                      "Successfull reconnection, server ready for communication")
                         self.user.socket.send(ready_msg.encode())
                         self.user.reconnection_event.clear()
-                        self.wait_for_recovery = False
+                        self.user.waiting_for_reconnection = False
 
             try:
                 msg = self.user.socket.recv(1024)
@@ -54,7 +53,7 @@ class ClientHandlerThread(threading.Thread):
                     err_msg = message.generate(
                         Header.END_CONNECTION, "No response from client")
                     self.user.socket.send(err_msg.encode())
-                    self.wait_for_recovery = True
+                    self.user.waiting_for_reconnection = True
                     continue
                 else:
                     msg_list = message.decode(msg)
@@ -70,21 +69,22 @@ class ClientHandlerThread(threading.Thread):
                                     Header.END_CONNECTION, "Invalid ping response, ending connection")
                                 self.user.socket.send(err_msg.encode())
                     if not ping_handled:
-                        self.wait_for_recovery = True
+                        self.user.waiting_for_reconnection = True
                         continue
 
             if not msg:
                 clog.info("No response from client")
-                self.wait_for_recovery = True
+                self.user.waiting_for_reconnection = True
             else:
                 msg_list = message.decode(msg)
                 for m in msg_list:
                     clog.info(m)
                     actions.handle(self.user, m, self.request_queue)
                     if m.header == Header.END_CONNECTION:
-                        self.wait_for_recovery = True
+                        self.user.waiting_for_reconnection = True
                         break
 
+        self.user.waiting_for_reconnection = False
         # Freeing the resources used
         req = ResourceRelease(user=self.user)
 
@@ -94,7 +94,11 @@ class ClientHandlerThread(threading.Thread):
             msg_str = "Error while removing user from resource list"
 
         msg = message.generate(Header.END_CONNECTION, msg_str)
-        self.user.socket.send(msg.encode())
+        try:
+            self.user.socket.send(msg.encode())
+        except BrokenPipeError:
+            # client already gone, socket closed
+            pass
 
         # TODO: Find a better way to handle last message sending
         sleep(.1)

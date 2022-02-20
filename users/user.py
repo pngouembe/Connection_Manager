@@ -25,6 +25,7 @@ class User:
     info: UserInfo
     socket: socket  # TODO: field(hash=False) not working, need to investigate
     reconnection_event: Event = field(default_factory=Event, hash=False)
+    waiting_for_reconnection: bool = field(default=False, hash=False)
     requested_resources: Set = field(default_factory=set, hash=False)
     current_resource: int = field(default=None)
     recovery_time: float = field(default=0, hash=False)
