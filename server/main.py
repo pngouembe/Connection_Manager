@@ -10,13 +10,26 @@ from mydataclasses.sdataclasses import MissingRequiredFields
 from mydataclasses.servers import Server
 from mydataclasses.uniquedataclass import DuplicateError
 from mylogger import clog
+from myui.server.web import configure_app
 from users import User, UserInfo
 
 from server.handlers.clients_handler import ClientHandlerThread
 from server.handlers.resources_handler import ResourceHandlerThread
 
+debug_web = False
+
 
 def launch_server(server_config: Server):
+
+    app = configure_app(server_config)
+    if debug_web:
+        # TODO: Remove when web interface finished
+        app.run(debug=True)
+    else:
+        # TODO: Use when web interface done
+        t2 = threading.Thread(target=app.run, kwargs={
+                              "debug": True, "use_reloader": False}).start()
+
     s = socket(AF_INET, SOCK_STREAM)
     s.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
     bound = False
@@ -42,6 +55,7 @@ def launch_server(server_config: Server):
                               run_event, request_queue)
     threads.append(t)
     t.start()
+
     while run_event.is_set():
         try:
             conn, addr = s.accept()
