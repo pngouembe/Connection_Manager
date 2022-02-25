@@ -11,7 +11,11 @@ _ids = []
 
 
 @dataclass(frozen=True)
-class UniqueSerializableDataclass(SerializableDataclass):
+class BaseFrozenDataclass:
+    pass
+
+@dataclass(frozen=True)
+class UniqueSerializableDataclass(SerializableDataclass, BaseFrozenDataclass):
     """
     This data class is a frozen version of the SerializableDataclass.
     It also only forbids duplicate instances by raising an error
