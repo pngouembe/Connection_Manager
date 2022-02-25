@@ -8,7 +8,9 @@ from mydataclasses.sdataclasses import MissingRequiredFields
 from users import UserInfo, User
 from client.handlers.com_handler import ComThread
 from myui.client.teminal import ClientTerminalDashboard
+from myui.client.web import configure_app
 
+debug_web = True
 
 def launch_client(client_dict: Dict):
     if "address" not in client_dict.keys():
@@ -19,6 +21,16 @@ def launch_client(client_dict: Dict):
     s = socket(AF_INET, SOCK_STREAM)
     s.connect((user_info.address, user_info.port))
     user = User(info=user_info, socket=s)
+    
+    app = configure_app(user)
+    if debug_web:
+        # TODO: Remove when web interface finished
+        # TODO: Check why double ctrl+C is needed
+        app.run(debug=True, port=5001)
+    else:
+        # TODO: Use when web interface done
+        t2 = threading.Thread(target=app.run, kwargs={
+                              "debug": True, "use_reloader": False, "port": 5001}).start()
 
     run_event = threading.Event()
     run_event.set()

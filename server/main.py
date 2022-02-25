@@ -24,6 +24,7 @@ def launch_server(server_config: Server):
     app = configure_app(server_config)
     if debug_web:
         # TODO: Remove when web interface finished
+        # TODO: Check why double ctrl+C is needed
         app.run(debug=True)
     else:
         # TODO: Use when web interface done
