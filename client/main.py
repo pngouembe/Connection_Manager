@@ -10,7 +10,7 @@ from client.handlers.com_handler import ComThread
 from myui.client.teminal import ClientTerminalDashboard
 from myui.client.web import configure_app
 
-debug_web = True
+debug_web = False
 
 def launch_client(client_dict: Dict):
     if "address" not in client_dict.keys():
@@ -23,14 +23,20 @@ def launch_client(client_dict: Dict):
     user = User(info=user_info, socket=s)
     
     app = configure_app(user)
-    if debug_web:
+    if debug_web == None:
+        pass
+    elif debug_web == True:
         # TODO: Remove when web interface finished
         # TODO: Check why double ctrl+C is needed
         app.run(debug=True, port=5001)
     else:
         # TODO: Use when web interface done
-        t2 = threading.Thread(target=app.run, kwargs={
-                              "debug": True, "use_reloader": False, "port": 5001}).start()
+        t3 = threading.Thread(target=app.run, 
+                              kwargs={
+                              "debug": True, 
+                              "use_reloader": False, 
+                              "port": 5001}, 
+                              daemon=True).start()
 
     run_event = threading.Event()
     run_event.set()

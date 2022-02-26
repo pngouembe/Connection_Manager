@@ -28,8 +28,11 @@ def launch_server(server_config: Server):
         app.run(debug=True)
     else:
         # TODO: Use when web interface done
-        t2 = threading.Thread(target=app.run, kwargs={
-                              "debug": True, "use_reloader": False}).start()
+        t2 = threading.Thread(target=app.run, 
+                              kwargs={
+                              "debug": True, 
+                              "use_reloader": False}, 
+                              daemon=True).start()
 
     s = socket(AF_INET, SOCK_STREAM)
     s.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
