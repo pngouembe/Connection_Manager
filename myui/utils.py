@@ -21,7 +21,10 @@ class RichLogLine:
         match = re.search(self.log_pattern, log_line)
         if match:
             self.groups = match.groupdict()
-            self.level = self.level_markup[self.groups["level"]]
+            try:
+                self.level = self.level_markup[self.groups["level"]]
+            except KeyError:
+                self.level = self.level_markup["CRITICAL"]
             self.log_line = re.sub(
                 self.log_pattern,
                 rf"{self.time_markup}\1{self.end_markup}\2{self.level}\4{self.msg_markup}\5",
