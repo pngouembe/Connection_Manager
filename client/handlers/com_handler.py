@@ -40,11 +40,16 @@ class ComThread(threading.Thread):
         elif msg_list[0].header != Header.CONNECTION_READY:
             raise ServerNotReadyError(msg_list[0])
 
-        msg = message.Message(Header.STATUS, self.user.info.resource)
+        msg = message.Message(
+            Header.STATUS, 
+            ",".join(self.user.requested_resources)
+        )
         message.send(self.user.socket, msg)
 
-        msg = message.Message(Header.REQUEST_RESOURCE,
-                              self.user.info.resource)
+        msg = message.Message(
+            Header.REQUEST_RESOURCE, 
+            ",".join(self.user.requested_resources)
+        )
         message.send(self.user.socket, msg)
 
         start_time = cur_time = time.time()
@@ -54,7 +59,10 @@ class ComThread(threading.Thread):
             for m in msg_list:
                 actions.handle(self.user, m, self.read_queue)
             if cur_time - start_time > self.refresh_interval:
-                msg = message.Message(Header.STATUS, self.user.info.resource)
+                msg = message.Message(
+                    Header.STATUS, 
+                    ",".join(self.user.requested_resources)
+                )
                 message.send(self.user.socket, msg)
                 start_time = time.time()
             cur_time = time.time()

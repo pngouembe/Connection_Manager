@@ -26,7 +26,4 @@ timeout: 0
 # a resource that you are using
 comment: I'm just trying the template cfg file
 
-# The ID of the resource you want to use
-resource: 0
-
 ...

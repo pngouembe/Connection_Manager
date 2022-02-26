@@ -5,7 +5,7 @@ import os
 
 class ClientConfig(Config):
 
-    required_info = ["name", "address", "resource"]
+    required_info = ["name", "address", "port"]
 
     def setup_argument_parser():
         default_cfg = "client_config_template.yml"

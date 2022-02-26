@@ -18,10 +18,9 @@ class Resource(SerializableDataclass):
 
     # TODO: Refactor dataclasses like done with user
     user_list: List[UserInfo] = field(default_factory=list, hash=False, repr=False)
+    # TODO: Fix is_usable
     is_usable: bool = field(default=True, hash=False)
-
-    def __post_init__(self) -> None:
-        self.is_free = True
+    is_free: bool = field(default=True, hash=False)
 
     def add_user(self, user: Union[User, UserInfo]) -> None:
         """
