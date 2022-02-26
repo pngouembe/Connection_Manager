@@ -40,6 +40,9 @@ class ComThread(threading.Thread):
         elif msg_list[0].header != Header.CONNECTION_READY:
             raise ServerNotReadyError(msg_list[0])
 
+        msg = message.Message(Header.STATUS, self.user.info.resource)
+        message.send(self.user.socket, msg)
+
         msg = message.Message(Header.REQUEST_RESOURCE,
                               self.user.info.resource)
         message.send(self.user.socket, msg)
