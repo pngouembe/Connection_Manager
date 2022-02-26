@@ -1,1 +1,9 @@
-<p>Hello !</p>
+
+<script type = "text/javascript" 
+src = "{{ url_for('static', filename = 'button.js') }}" ></script>
+{{ user.requested_resources }}
+{% for resource in user.accessible_resources_list %}
+    <p>{{ resource }}</p>
+    <p>{{ resource.is_free }}</p>
+    <input type="button" onclick="buttonPress({{ resource.id }})" value="Request {{ resource.name }}">
+{% endfor %}
