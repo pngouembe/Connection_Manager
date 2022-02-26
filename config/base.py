@@ -10,9 +10,6 @@ import os
 import yaml
 from config import __path__
 
-#TODO: Use relevent .py files instead of using the __init__.py for the code
-
-
 class UnsupportedFileError(Exception):
     pass
 
