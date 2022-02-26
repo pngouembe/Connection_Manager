@@ -44,15 +44,15 @@ def launch_client(client_dict: Dict):
     t = ComThread(user=user, run_event=run_event, read_queue=read_queue)
     t.start()
 
-    t2 = ClientTerminalDashboard(
-        user=user, run_event=run_event, queue=read_queue
-    )
-    t2.start()
+    # t2 = ClientTerminalDashboard(
+    #     user=user, run_event=run_event, queue=read_queue
+    # )
+    # t2.start()
 
     try:
         t.join()
-        t2.join()
+        # t2.join()
     except KeyboardInterrupt:
         run_event.clear()
         t.join()
-        t2.join()
+        # t2.join()
