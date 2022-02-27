@@ -57,7 +57,6 @@ class ClientHandlerThread(threading.Thread):
                     continue
                 else:
                     ping_handled = False
-                    clog.error(msg_list)
                     for m in msg_list:
                         r = actions.handle(
                             self.user, m, self.request_queue)
