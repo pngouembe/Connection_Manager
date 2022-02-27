@@ -27,13 +27,11 @@ def timeout_handling(user: User, msg: Message, read_queue: Queue) -> bool:
 @action(Header.STATUS)
 def status_handling(user: User, msg: Message, read_queue: Queue) -> bool:
     # Getting the ids of the resources from the message payload
-    # TODO: Fix resource not deserialized when web page loaded quickly
     msg.payload = Resource.deserialize(msg.payload)
     if msg.payload.id >= len(user.accessible_resources_list):
-        user.accessible_resources_list.append({msg.payload})
+        user.accessible_resources_list.append(msg.payload)
     else:
         user.accessible_resources_list[msg.payload.id] = msg.payload
-
     return True
 
 
