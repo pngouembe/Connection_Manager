@@ -1,6 +1,7 @@
 import argparse
-from config.base import Config, __path__, MissingRequiredInfo
 import os
+
+from config.base import Config, __path__
 
 
 class ClientConfig(Config):

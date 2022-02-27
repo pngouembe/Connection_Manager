@@ -13,6 +13,9 @@ address: localhost
 # Port to use to connect to the server
 port: 65432
 
+# Port used for the local web server
+local_port: 5001
+
 # Command to execute in the shell when client connection is authorized
 cmd: echo "Welcome to the connection manager client"; sleep 5
 

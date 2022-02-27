@@ -77,14 +77,14 @@ def launch_client(client_dict: Dict):
     elif debug_web == True:
         # TODO: Remove when web interface finished
         # TODO: Check why double ctrl+C is needed
-        app.run(debug=True, port=5001)
+        app.run(debug=True, port=user.info.local_port)
     else:
         # TODO: Use when web interface done
         t3 = threading.Thread(target=app.run,
                               kwargs={
                                   "debug": True,
                                   "use_reloader": False,
-                                  "port": 5001},
+                                  "port": user.info.local_port},
                               daemon=True).start()
 
     # t2 = ClientTerminalDashboard(

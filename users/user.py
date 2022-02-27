@@ -3,7 +3,6 @@ from socket import socket
 from threading import Event
 from typing import List, Set
 
-from mydataclasses.sdataclasses import SerializableDataclass
 from mydataclasses.uniquedataclass import UniqueSerializableDataclass
 
 
@@ -18,6 +17,7 @@ class UserInfo(UniqueSerializableDataclass):
     name: str = field(hash=True)
     address: str = field(hash=True)
     port: int = field(hash=True)
+    local_port: int = field(hash=False, repr=False, default=5001)
 
 
 @dataclass(unsafe_hash=True)
