@@ -77,8 +77,7 @@ class ResourceHandlerThread(threading.Thread):
             if r.user_list:
                 if r.user_list[0] == user.info and len(r.user_list) > 1:
                     next_user = self.user_dict[r.user_list[1]]
-                    msg_str = "Access to {}: {} granted to {}".format(
-                        r.id, r.name, next_user.info.name)
+                    msg_str = "{}".format(r.id)
                     msg = message.Message(Header.FREE_RESOURCE, msg_str)
                     message.send(next_user.socket, msg)
 
