@@ -56,13 +56,15 @@ class Message:
     def encode(self) -> bytes:
         return generate(self.header, self.payload).encode()
 
-    # TODO: Add send method
+    def send(self, socket: socket):
+        """Send the message using the socket passed in argument"""
+        self.timestamp = datetime.now().strftime("%H:%M:%S")
+        clog.debug(f"Send: {self}")
+        socket.send(self.encode())
 
 
-# TODO: Use everywhere
 def send(sock: socket, msg: Message):
-    clog.debug(f"Send: {msg}")
-    sock.send(msg.encode())
+    msg.send(socket=sock)
 
 
 def decode(msg: Union[str, bytes]) -> List[Message]:
