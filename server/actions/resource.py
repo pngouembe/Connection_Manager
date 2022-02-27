@@ -54,7 +54,7 @@ def request_resource_handling(user: User, msg: Message, request_queue: Queue) ->
 
     # Request is transferred to the Resource handler.
     # The resource handler will respond to the requester
-    ResourceHandlerThread.handle_request(req, request_queue, blocks=False)
+    ResourceHandlerThread.handle_request(req, request_queue)
     return True
 
 

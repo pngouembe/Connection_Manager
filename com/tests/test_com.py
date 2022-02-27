@@ -1,4 +1,5 @@
 import unittest
+
 from com import message
 from com.header import Header
 
@@ -14,7 +15,8 @@ class TestComMethods(unittest.TestCase):
 
     def test_generate(self):
         str = message.generate(Header.INTRODUCE, "Hello world!")
-        exp_str = self.msg_pattern.format(Header.INTRODUCE.value, "Hello world!")
+        exp_str = self.msg_pattern.format(
+            Header.INTRODUCE.value, "Hello world!")
         self.assertEqual(str, exp_str)
 
         # Testing message generation with invalid payload
@@ -43,7 +45,8 @@ class TestComMethods(unittest.TestCase):
 
         # Testing special character payload decoding
         special_char_str = "special {} char".format(message.suffix)
-        rcv_str += self.msg_pattern.format(Header.INVALID.value, special_char_str)
+        rcv_str += self.msg_pattern.format(Header.INVALID.value,
+                                           special_char_str)
         msg_list = message.decode(rcv_str)
         exp_msg_list.append(message.Message(Header.INVALID, special_char_str))
         self.assertEqual(msg_list, exp_msg_list)
@@ -52,7 +55,7 @@ class TestComMethods(unittest.TestCase):
         rcv_str = self.msg_pattern.format('', "No header!")
         msg_list = message.decode(rcv_str)
         exp_msg_list = [message.Message(
-            Header.INVALID, 'Received message incomplete, missing header or payload')]
+            Header.INVALID, 'Received incomplete message: $$$|||No header!~~~')]
         self.assertEqual(msg_list, exp_msg_list)
 
         rcv_str = b"$$$2|||name: Test client\naddress: 127.0.0.1\nresource: 0\n~~~"

@@ -24,8 +24,9 @@ class TestServerResourceMethods(TestServerMethods):
         msg = message.Message(Header.REQUEST_RESOURCE, "0")
         self.send_msg(msg)
 
+        # When you already posses the resource, you also receive FREE_RESOURCE
         rcv_msg = self.recv_msg()
-        self.assertEqual(rcv_msg.header, Header.WAIT)
+        self.assertEqual(rcv_msg.header, Header.FREE_RESOURCE)
 
     def test_send_status(self):        # Getting current status
         msg = message.Message(Header.STATUS, "0")
