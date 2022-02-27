@@ -1,5 +1,9 @@
+from queue import Queue
+
 from com.header import Header
+from com.message import Message
 from mylogger import clog
+from users.user import User
 
 action_list = []
 
@@ -21,6 +25,6 @@ def action(com_header: Header):
 
 
 @action(Header.INVALID)
-def invalid_handling(msg):
+def invalid_handling(user: User, msg: Message, request_queue: Queue):
     clog.error(msg)
     return False

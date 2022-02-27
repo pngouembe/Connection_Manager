@@ -69,10 +69,13 @@ def send(sock: socket, msg: Message):
 
 def decode(msg: Union[str, bytes]) -> List[Message]:
     message_list = []
+    if not msg:
+        return message_list
+
     if isinstance(msg, bytes):
         msg = msg.decode(encoding='raw_unicode_escape')
-
-    for split_msg in msg.split(suffix + prefix):
+    msg_list = msg.split(suffix + prefix)
+    for split_msg in msg_list:
         if not split_msg.endswith(suffix):
             split_msg += suffix
         if not split_msg.startswith(prefix):
@@ -86,7 +89,7 @@ def decode(msg: Union[str, bytes]) -> List[Message]:
         else:
             tmp_msg = Message(
                 Header.INVALID,
-                "Received message incomplete, missing header or payload")
+                f"Received incomplete message: {split_msg}")
         message_list.append(tmp_msg)
     return message_list
 
