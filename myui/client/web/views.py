@@ -1,6 +1,8 @@
 import json
 from queue import Queue
 
+from client.handlers.request_handler import (RequestHandlerThread,
+                                             ResourceRelease, ResourceRequest)
 from com import message
 from com.header import Header
 from flask import Blueprint, current_app, jsonify, render_template, request
@@ -38,24 +40,20 @@ def requestedResourcesUpdate():
 @views.route("/request-resources", methods=['POST'])
 def requestResource():
     user: User = current_app.config["context"]
-    send_queue: Queue = current_app.config["send_queue"]
+    request_thread: RequestHandlerThread = current_app.config["request_thread"]
     clog.info(f"Requesting resources: {user.requested_resources}")
-    msg = message.Message(
-        Header.REQUEST_RESOURCE,
-        ",".join(user.requested_resources)
-    )
-    send_queue.put(msg)
-    # TODO: Wait for response before reloading the page
+    req = ResourceRequest(user, user.requested_resources)
+    request_thread.handle_request(req)
+
     return jsonify({})
 
 
 @views.route("/free-resources", methods=['POST'])
 def freeResource():
     user: User = current_app.config["context"]
-    send_queue: Queue = current_app.config["send_queue"]
+    request_thread: RequestHandlerThread = current_app.config["request_thread"]
     clog.info(f"Freeing resources: {user.requested_resources}")
-    user.requested_resources = set()
-    user.current_resource = None
-    msg = message.Message(Header.RELEASE_RESOURCE, "")
-    send_queue.put(msg)
+    req = ResourceRelease(user)
+    request_thread.handle_request(req)
+
     return jsonify({})

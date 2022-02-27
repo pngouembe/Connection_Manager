@@ -15,6 +15,7 @@ from users import User
 @action(Header.FREE_RESOURCE)
 def free_resource_handling(user: User, msg: Message, read_queue: Queue) -> bool:
     user.current_resource = int(msg.payload)
+    read_queue.put(msg)
     return True
 
 
@@ -38,6 +39,7 @@ def status_handling(user: User, msg: Message, read_queue: Queue) -> bool:
 
 @action(Header.WAIT)
 def wait_handling(user: User, msg: Message, read_queue: Queue) -> bool:
+    read_queue.put(msg)
     return True
 
 
@@ -50,4 +52,5 @@ def request_resource_handling(user: User, msg: Message, read_queue: Queue) -> bo
 def release_resource_handling(user: User, msg: Message, read_queue: Queue) -> bool:
     user.requested_resources = set()
     user.current_resource = None
+    read_queue.put(msg)
     return True

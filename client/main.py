@@ -14,6 +14,7 @@ from myui.client.web import configure_app
 from users import User, UserInfo
 
 from client.handlers.com_handler import ClientComThread
+from client.handlers.request_handler import RequestHandlerThread
 
 debug_web = False
 # TODO: Make configurable
@@ -38,12 +39,17 @@ def launch_client(client_dict: Dict):
     user = User(info=user_info, socket=s)
     run_event = threading.Event()
     run_event.set()
-    send_queue = Queue()
-    app = configure_app(user, send_queue=send_queue)
+    request_queue = Queue()
+    read_queue = Queue()
 
     com_thread = ClientComThread(
-        user=user, run_event=run_event, queue=send_queue)
+        user=user, run_event=run_event, queue=read_queue)
+    request_thread = RequestHandlerThread(
+        run_event=run_event, request_queue=request_queue, read_queue=read_queue)
+    request_thread.start()
+    app = configure_app(user, request_thread=request_thread)
 
+    # TODO: Use actions for that
     # Checking server availability
     msg = message.Message(Header.INTRODUCE, user.info.serialize())
     message.send(user.socket, msg)

@@ -34,12 +34,6 @@ class ClientComThread(ComThread):
 
         start_time = cur_time = time.time()
         while self.run_event.is_set():
-            try:
-                msg = self.queue.get_nowait()
-            except Empty:
-                pass
-            else:
-                message.send(self.user.socket, msg)
 
             try:
                 msg_list = message.recv(self.user.socket)
