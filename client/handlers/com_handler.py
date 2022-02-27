@@ -1,5 +1,7 @@
 import threading
-from queue import Queue
+import time
+from queue import Empty, Queue
+from socket import timeout
 
 import client.actions.handle as actions
 from com import message
@@ -7,60 +9,48 @@ from com.header import Header
 from mydataclasses.uniquedataclass import DuplicateError
 from mylogger import clog
 from users import User
-import time
-
-
-class ServerNotReadyError(Exception):
-    def __init__(self, *args: object) -> None:
-        clog.info("Server not ready, unable to communicate")
-        super().__init__(*args)
 
 # TODO: Make common handler thread class
 
 
 class ComThread(threading.Thread):
 
-    def __init__(self, user: User, run_event: threading.Event, read_queue: Queue) -> None:
+    def __init__(self, user: User, run_event: threading.Event, queue: Queue) -> None:
         self.user = user
         self.run_event = run_event
-        self.read_queue = read_queue
+        self.queue = queue
+        super().__init__(name=user.info.name)
+
+# TODO: Investigate need for in and out queues
+class ClientComThread(ComThread):
+    def __init__(self, user: User, run_event: threading.Event, queue: Queue) -> None:
         # TODO: make refresh interval configurable
         # Time in sec between two automatic status request
         self.refresh_interval = 3
-        super().__init__(name=user.info.name)
+        super().__init__(user, run_event, queue)
 
     def run(self) -> None:
         clog.info("{} thread launched".format(self.name))
-        msg = message.Message(Header.INTRODUCE, self.user.info.serialize())
-        message.send(self.user.socket, msg)
-        msg_list = message.recv(self.user.socket)
-        if msg_list[0].header == Header.END_CONNECTION:
-            clog.error(msg_list[0])
-            raise DuplicateError("Client already running")
-        elif msg_list[0].header != Header.CONNECTION_READY:
-            raise ServerNotReadyError(msg_list[0])
-
-        msg = message.Message(
-            Header.STATUS, 
-            ",".join(self.user.requested_resources)
-        )
-        message.send(self.user.socket, msg)
-
-        msg = message.Message(
-            Header.REQUEST_RESOURCE, 
-            ",".join(self.user.requested_resources)
-        )
-        message.send(self.user.socket, msg)
 
         start_time = cur_time = time.time()
         while self.run_event.is_set():
-            msg = self.user.socket.recv(1024)
-            msg_list = message.decode(msg)
+            try:
+                msg = self.queue.get_nowait()
+            except Empty:
+                pass
+            else:
+                message.send(self.user.socket, msg)
+
+            try:
+                msg_list = message.recv(self.user.socket)
+            except timeout:
+                continue
+
             for m in msg_list:
-                actions.handle(self.user, m, self.read_queue)
+                actions.handle(self.user, m, self.queue)
             if cur_time - start_time > self.refresh_interval:
                 msg = message.Message(
-                    Header.STATUS, 
+                    Header.STATUS,
                     ",".join(self.user.requested_resources)
                 )
                 message.send(self.user.socket, msg)

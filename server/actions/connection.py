@@ -13,9 +13,8 @@ def end_connection_handling(user: User, msg: Message, request_queue: Queue) -> b
     # The closure of the socket is handled by the client handling thread
     msg_to_send = "Ending connection for {}: {}".format(
         user.info.name, msg.payload)
-    resp = message.generate(Header.END_CONNECTION, msg_to_send)
-    user.socket.send(resp.encode())
-
+    resp = message.Message(Header.END_CONNECTION, msg_to_send)
+    message.send(user.socket, resp)
     return True
 
 
@@ -27,7 +26,7 @@ def introduction_handling(user: User, msg: Message, request_queue: Queue) -> boo
 
 @action(Header.PING)
 def ping_handling(user: User, msg: Message, request_queue: Queue) -> bool:
-    if 'pong' == msg.payload:
+    if message.pong.payload == msg.payload:
         return True
     else:
         clog.info("Client response to ping is incorrect")

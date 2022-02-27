@@ -28,10 +28,10 @@ def launch_server(server_config: Server):
         app.run(debug=True)
     else:
         # TODO: Use when web interface done
-        t2 = threading.Thread(target=app.run, 
+        t2 = threading.Thread(target=app.run,
                               kwargs={
-                              "debug": True, 
-                              "use_reloader": False}, 
+                                  "debug": True,
+                                  "use_reloader": False},
                               daemon=True).start()
 
     s = socket(AF_INET, SOCK_STREAM)
@@ -72,21 +72,19 @@ def launch_server(server_config: Server):
             data = conn.recv(1024)
         except timeout as e:
             msg_str = "Client introducing message not received, closing socket"
-            clog.info(msg_str)
-            msg = message.generate(Header.END_CONNECTION, msg_str)
-            conn.send(msg.encode())
+            msg = message.Message(Header.END_CONNECTION, msg_str)
+            message.send(conn, msg)
             conn.close()
             continue
         msg_list: List[message.Message] = message.decode(data)
         for msg in msg_list:
-            clog.info(msg)
             if msg.header == Header.INTRODUCE:
                 try:
                     user_info = UserInfo.deserialize(msg.payload)
                 except MissingRequiredFields as e:
-                    err_msg = message.generate(
+                    err_msg = message.Message(
                         Header.END_CONNECTION, e.message)
-                    conn.send(err_msg.encode())
+                    message.send(conn, err_msg)
                     continue
                 except DuplicateError:
                     """
@@ -97,11 +95,11 @@ def launch_server(server_config: Server):
                     if user.waiting_for_reconnection:
                         user.socket.close()
                         user.socket = conn
-                        user.reconnection_event.set()
+                        user.user_event.set()
                     else:
-                        err_msg = message.generate(
+                        err_msg = message.Message(
                             Header.END_CONNECTION, "User already connected")
-                        conn.send(err_msg.encode())
+                        message.send(conn, err_msg)
                 else:
                     user = User(info=user_info,
                                 socket=conn,

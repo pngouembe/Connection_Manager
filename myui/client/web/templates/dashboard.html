@@ -1,9 +1,14 @@
 
-<script type = "text/javascript" 
-src = "{{ url_for('static', filename = 'button.js') }}" ></script>
+<script type = "text/javascript"
+src = "{{ url_for('static', filename = 'dashboard.js') }}" ></script>
 {{ user.requested_resources }}
+{{ user.current_resource }}
 {% for resource in user.accessible_resources_list %}
-    <p>{{ resource }}</p>
-    <p>{{ resource.is_free }}</p>
-    <input type="button" onclick="buttonPress({{ resource.id }})" value="Request {{ resource.name }}">
+<p>{{ resource }}</p>
+<p>{{ resource.is_free }}</p>
+<input type="checkbox" name="resource" value="{{ resource.id }}" onchange="requestedResourcesUpdate(this)">
+{% if user.current_resource == resource.id %}
+<input type="button" onclick="freeResource()" value="Free resource" >
+{% endif %}
 {% endfor %}
+<input type="button" onclick="requestResources()" value="Request resources">

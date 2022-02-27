@@ -1,7 +1,7 @@
 import threading
 from dataclasses import dataclass
 from queue import Empty, Queue
-from typing import List, Set, Union, Dict
+from typing import Dict, List, Set, Union
 
 from com import message
 from com.header import Header
@@ -10,6 +10,7 @@ from mylogger import clog
 from users import User
 from users.user import UserInfo
 
+# TODO: Make configurable
 queue_timeout = 1
 request_timout = 1
 
@@ -88,6 +89,8 @@ class ResourceHandlerThread(threading.Thread):
                 req = self.queue.get(timeout=queue_timeout)
             except Empty:
                 continue
+            else:
+                clog.info(f"Received following request {req}")
 
             if req.resource_ids:
                 resources = [self.resource_list[id] for id in req.resource_ids]
@@ -113,14 +116,13 @@ class ResourceHandlerThread(threading.Thread):
                         # add_user must be inside the if as it modifies is_free
                         r.add_user(req.user)
                         req.user.requested_resources = {r}
-                        msg_header = Header.FREE_RESOURCE
-                        msg_str = "Access to {}: {} granted to {}".format(
-                            r.id, r.name, req.user.info.name)
-                        msg = message.generate(msg_header, msg_str)
-                        req.user.socket.send(msg.encode())
+                        msg = message.Message(Header.FREE_RESOURCE, f"{r.id}")
+                        message.send(req.user.socket, msg)
                         # First available resource access is granted and
                         # research is stopped
                         free_resource_found = True
+                        clog.info("Access to {}: {} granted to {}".format(
+                            r.id, r.name, req.user.info.name))
                         break
                     else:
                         r.add_user(req.user)
@@ -129,8 +131,8 @@ class ResourceHandlerThread(threading.Thread):
                 if not free_resource_found:
                     msg_header = Header.WAIT
                     msg_str = "None of the requested resource is available"
-                    msg = message.generate(msg_header, msg_str)
-                    req.user.socket.send(msg.encode())
+                    msg = message.Message(msg_header, msg_str)
+                    message.send(req.user.socket, msg)
 
             # Notify that request handling is done if it was blocking
             if req.handled:

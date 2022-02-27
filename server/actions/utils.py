@@ -22,5 +22,5 @@ def action(com_header: Header):
 
 @action(Header.INVALID)
 def invalid_handling(msg):
-    clog.info(msg)
+    clog.error(msg)
     return False

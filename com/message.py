@@ -1,10 +1,13 @@
-from dataclasses import dataclass, field
-from com.header import Header
-from datetime import datetime
 import re
-from typing import List, Union
+from dataclasses import dataclass, field
+from datetime import datetime
 from socket import socket
+from typing import List, Union
+
+from mylogger import clog
 from rich.pretty import Pretty
+
+from com.header import Header
 
 separator = "|||"
 prefix = "$$$"
@@ -58,6 +61,7 @@ class Message:
 
 # TODO: Use everywhere
 def send(sock: socket, msg: Message):
+    clog.debug(f"Send: {msg}")
     sock.send(msg.encode())
 
 
@@ -88,14 +92,11 @@ def decode(msg: Union[str, bytes]) -> List[Message]:
 
 
 def recv(sock: socket) -> List[Message]:
-    return decode(sock.recv(1024))
+    msg_list = decode(sock.recv(1024))
+    for msg in msg_list:
+        clog.debug(f"Recv: {msg}")
+    return msg_list
 
 
-def ping():
-    return generate(Header.PING, 'ping')
-
-
-def pong():
-    return generate(Header.PING, 'pong')
-
-#TODO: Make ping and pong Messages
+ping = Message(Header.PING, "ping")
+pong = Message(Header.PING, "pong")

@@ -1,16 +1,30 @@
 
-from queue import Queue
-from socket import AF_INET, SOCK_STREAM, gethostbyname, socket
 import threading
+from queue import Queue
+from socket import AF_INET, SOCK_STREAM, gethostbyname, socket, timeout
 from typing import Dict
 
+from com import message
+from com.header import Header
 from mydataclasses.sdataclasses import MissingRequiredFields
-from users import UserInfo, User
-from client.handlers.com_handler import ComThread
+from mydataclasses.uniquedataclass import DuplicateError
+from mylogger import clog
 from myui.client.teminal import ClientTerminalDashboard
 from myui.client.web import configure_app
+from users import User, UserInfo
+
+from client.handlers.com_handler import ClientComThread
 
 debug_web = False
+# TODO: Make configurable
+client_socket_timeout = 1
+
+
+class ServerNotReadyError(Exception):
+    def __init__(self, *args: object) -> None:
+        clog.info("Server not ready, unable to communicate")
+        super().__init__(*args)
+
 
 def launch_client(client_dict: Dict):
     if "address" not in client_dict.keys():
@@ -19,10 +33,39 @@ def launch_client(client_dict: Dict):
     client_dict["address"] = gethostbyname(client_dict["address"])
     user_info = UserInfo(**client_dict)
     s = socket(AF_INET, SOCK_STREAM)
+    s.settimeout(client_socket_timeout)
     s.connect((user_info.address, user_info.port))
     user = User(info=user_info, socket=s)
-    
-    app = configure_app(user)
+    run_event = threading.Event()
+    run_event.set()
+    send_queue = Queue()
+    app = configure_app(user, send_queue=send_queue)
+
+    com_thread = ClientComThread(
+        user=user, run_event=run_event, queue=send_queue)
+
+    # Checking server availability
+    msg = message.Message(Header.INTRODUCE, user.info.serialize())
+    message.send(user.socket, msg)
+    try:
+        msg_list = message.recv(user.socket)
+    except timeout:
+        raise ServerNotReadyError(
+            f"No message received after waiting {client_socket_timeout}s")
+    if msg_list[0].header == Header.END_CONNECTION:
+        clog.error(msg_list[0])
+        raise DuplicateError("Client already running")
+    elif msg_list[0].header != Header.CONNECTION_READY:
+        raise ServerNotReadyError(msg_list[0])
+
+    com_thread.start()
+
+    msg = message.Message(
+        Header.STATUS,
+        ",".join(user.requested_resources)
+    )
+    message.send(user.socket, msg)
+
     if debug_web == None:
         pass
     elif debug_web == True:
@@ -31,18 +74,12 @@ def launch_client(client_dict: Dict):
         app.run(debug=True, port=5001)
     else:
         # TODO: Use when web interface done
-        t3 = threading.Thread(target=app.run, 
+        t3 = threading.Thread(target=app.run,
                               kwargs={
-                              "debug": True, 
-                              "use_reloader": False, 
-                              "port": 5001}, 
+                                  "debug": True,
+                                  "use_reloader": False,
+                                  "port": 5001},
                               daemon=True).start()
-
-    run_event = threading.Event()
-    run_event.set()
-    read_queue = Queue()
-    t = ComThread(user=user, run_event=run_event, read_queue=read_queue)
-    t.start()
 
     # t2 = ClientTerminalDashboard(
     #     user=user, run_event=run_event, queue=read_queue
@@ -50,9 +87,9 @@ def launch_client(client_dict: Dict):
     # t2.start()
 
     try:
-        t.join()
+        com_thread.join()
         # t2.join()
     except KeyboardInterrupt:
         run_event.clear()
-        t.join()
+        com_thread.join()
         # t2.join()

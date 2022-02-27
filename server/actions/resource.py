@@ -22,7 +22,6 @@ def timeout_handling(user: User, msg: Message, request_queue: Queue) -> bool:
     pass
 
 
-# TODO: Add support for querying status of all the resources
 @action(Header.STATUS)
 def status_handling(user: User, msg: Message, request_queue: Queue) -> bool:
     # Getting the ids of the resources from the message payload
@@ -32,8 +31,8 @@ def status_handling(user: User, msg: Message, request_queue: Queue) -> bool:
     else:
         resource_list = ResourceHandlerThread.resource_list
     for r in resource_list:
-        resp = message.generate(Header.STATUS, r.serialize())
-        user.socket.send(resp.encode())
+        resp = message.Message(Header.STATUS, r.serialize())
+        message.send(user.socket, resp)
     return True
 
 
@@ -45,6 +44,7 @@ def wait_handling(user: User, msg: Message, request_queue: Queue) -> bool:
 @action(Header.REQUEST_RESOURCE)
 def request_resource_handling(user: User, msg: Message, request_queue: Queue) -> bool:
     ids = set(map(int, re.sub("\D", " ", msg.payload).split()))
+    clog.info(f"{user.info.name} requested resources {ids}")
     try:
         req = ResourceRequest(resource_ids=ids, user=user)
     except ValueError as e:
@@ -54,7 +54,7 @@ def request_resource_handling(user: User, msg: Message, request_queue: Queue) ->
 
     # Request is transferred to the Resource handler.
     # The resource handler will respond to the requester
-    ResourceHandlerThread.handle_request(req, request_queue)
+    ResourceHandlerThread.handle_request(req, request_queue, blocks=False)
     return True
 
 
@@ -63,5 +63,5 @@ def release_resource_handling(user: User, msg: Message, request_queue: Queue) ->
     req = ResourceRelease(user=user)
     ResourceHandlerThread.handle_request(req, request_queue)
     msg = Message(Header.RELEASE_RESOURCE, "User resource released")
-    user.socket.send(msg.encode())
+    message.send(user.socket, msg)
     return True
